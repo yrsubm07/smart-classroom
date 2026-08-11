@@ -1,4 +1,4 @@
-// Pre-loaded 10 Students, Teacher Profiles, Class Schedules & Pre-populated Chat Messages
+// Pre-loaded 10 Students, Teacher Profiles, Class Schedules, Group Chat & Leaderboard Data
 
 const TEACHER_PROFILE = {
     id: "T-304",
@@ -18,6 +18,11 @@ const CLASS_SCHEDULE = [
     { time: "01:30 PM - 02:15 PM", subject: "Machine Learning Lab", room: "Lab 4", instructor: "Dr. Rajesh K. Sharma", status: "Upcoming" }
 ];
 
+const ASSIGNMENTS = [
+    { id: "HW-01", title: "Haversine GPS Formula Implementation", subject: "CS-402", dueDate: "Tomorrow, 05:00 PM", status: "Pending" },
+    { id: "HW-02", title: "Dynamic QR Token Cryptographic Hashing", subject: "CS-402", dueDate: "Friday, 11:59 PM", status: "Submitted" }
+];
+
 const INITIAL_STUDENTS = [
     {
         id: "STU-101",
@@ -25,9 +30,10 @@ const INITIAL_STUDENTS = [
         password: "password123",
         name: "Aarav Sharma",
         seatNo: "Desk 1A",
+        xpPoints: 340,
         avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
         status: "Absent",
-        sessionTimer: 2700, // 45 mins in seconds
+        sessionTimer: 2700,
         sessionActive: false,
         location: {
             lat: 28.6139,
@@ -44,6 +50,7 @@ const INITIAL_STUDENTS = [
         password: "password123",
         name: "Ananya Verma",
         seatNo: "Desk 1B",
+        xpPoints: 480,
         avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
         status: "Absent",
         sessionTimer: 2700,
@@ -63,6 +70,7 @@ const INITIAL_STUDENTS = [
         password: "password123",
         name: "Rohan Gupta",
         seatNo: "Desk 2A",
+        xpPoints: 290,
         avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
         status: "Absent",
         sessionTimer: 2700,
@@ -82,6 +90,7 @@ const INITIAL_STUDENTS = [
         password: "password123",
         name: "Diya Patel",
         seatNo: "Desk 2B",
+        xpPoints: 410,
         avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&q=80",
         status: "Absent",
         sessionTimer: 2700,
@@ -101,6 +110,7 @@ const INITIAL_STUDENTS = [
         password: "password123",
         name: "Kabir Singh",
         seatNo: "Desk 3A",
+        xpPoints: 150,
         avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
         status: "Absent",
         sessionTimer: 2700,
@@ -120,6 +130,7 @@ const INITIAL_STUDENTS = [
         password: "password123",
         name: "Isha Nair",
         seatNo: "Desk 3B",
+        xpPoints: 370,
         avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
         status: "Absent",
         sessionTimer: 2700,
@@ -139,6 +150,7 @@ const INITIAL_STUDENTS = [
         password: "password123",
         name: "Vihaan Joshi",
         seatNo: "Desk 4A",
+        xpPoints: 310,
         avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
         status: "Absent",
         sessionTimer: 2700,
@@ -158,6 +170,7 @@ const INITIAL_STUDENTS = [
         password: "password123",
         name: "Sanya Roy",
         seatNo: "Desk 4B",
+        xpPoints: 450,
         avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80",
         status: "Absent",
         sessionTimer: 2700,
@@ -177,6 +190,7 @@ const INITIAL_STUDENTS = [
         password: "password123",
         name: "Aryan Malhotra",
         seatNo: "Desk 5A",
+        xpPoints: 260,
         avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&q=80",
         status: "Absent",
         sessionTimer: 2700,
@@ -196,6 +210,7 @@ const INITIAL_STUDENTS = [
         password: "password123",
         name: "Tara Mehta",
         seatNo: "Desk 5B",
+        xpPoints: 500,
         avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80",
         status: "Absent",
         sessionTimer: 2700,

@@ -10,21 +10,21 @@ const App = {
     init: function() {
         AuthEngine.init();
         
-        // Initialize Core Engines
+        // Initialize Timers & Auto-Refresh QR
         TimerEngine.startMasterTimer();
         QREngine.startAutoRefresh();
 
-        // Populate dropdowns
+        // Populate selects
         this.populateDropdowns();
 
-        // Check login state
+        // Check authentication
         if (AuthEngine.currentUser) {
             this.showMainApp();
         } else {
             this.showLoginScreen();
         }
 
-        // Setup event bindings
+        // Bind UI events
         this.bindEvents();
     },
 
@@ -85,6 +85,7 @@ const App = {
         this.renderStudentPortal();
         this.renderTeacherProfile();
         this.renderScheduleTable();
+        this.renderLeaderboard();
         ChatEngine.renderMessages();
     },
 
@@ -102,7 +103,7 @@ const App = {
         document.getElementById('breachAlertCount').innerText = breachCount;
     },
 
-    // 10 Desk Seating Grid
+    // 10 Desk Seating Chart
     renderSeatingGrid: function() {
         const container = document.getElementById('seatingGridContainer');
         if (!container) return;
@@ -145,7 +146,7 @@ const App = {
         });
     },
 
-    // Live Geofence Radar Map Pins
+    // Radar Map Pins
     renderRadarMap: function() {
         const container = document.getElementById('radarMapContainer');
         if (!container) return;
@@ -240,6 +241,36 @@ const App = {
         });
     },
 
+    // Class Leaderboard (XP Rankings)
+    renderLeaderboard: function() {
+        const tbody = document.getElementById('leaderboardTableBody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        const sorted = [...AppState.students].sort((a, b) => b.xpPoints - a.xpPoints);
+
+        sorted.forEach((s, rank) => {
+            const tr = document.createElement('tr');
+            let medal = `#${rank + 1}`;
+            if (rank === 0) medal = '🥇 #1';
+            if (rank === 1) medal = '🥈 #2';
+            if (rank === 2) medal = '🥉 #3';
+
+            tr.innerHTML = `
+                <td><strong style="color: var(--warning-amber);">${medal}</strong></td>
+                <td>
+                    <div class="user-cell">
+                        <img src="${s.avatar}" alt="${s.name}">
+                        <strong>${s.name}</strong>
+                    </div>
+                </td>
+                <td>${s.enrollNo}</td>
+                <td><strong style="color: var(--primary-cyan);">${s.xpPoints} XP</strong></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    },
+
     // Teacher Info Profile Card (Student View)
     renderTeacherProfile: function() {
         const nameElem = document.getElementById('teacherInfoName');
@@ -311,6 +342,39 @@ const App = {
         }
     },
 
+    // TEACHER ANNOY & SURPRISE CONTROL ACTIONS
+    triggerPopQuizAttack: function() {
+        QREngine.playBeepSound();
+        this.showNotification("⚡ POP QUIZ ATTACK! Triggering 10-second sudden quiz on student screens...", "warning");
+        this.addActivityLog("⚡ TEACHER ACTION: Initiated sudden Pop Quiz Attack on Room 304.");
+        alert("🚨 TEACHER POP QUIZ ATTACK! All students must answer Q1 within 10 seconds!");
+    },
+
+    triggerDeskVibration: function() {
+        QREngine.playBeepSound();
+        this.showNotification("📳 WAKE-UP SHAKE ALERT: Shaking sleeping students' desk screens!", "error");
+        this.addActivityLog("📳 TEACHER ACTION: Triggered WAKE-UP Desk Vibration Shake Alert.");
+        
+        // Shake body for visual effect
+        document.body.style.animation = "shake 0.5s ease";
+        setTimeout(() => document.body.style.animation = "", 500);
+    },
+
+    triggerDiscoParty: function() {
+        this.showNotification("🎉 NEON DISCO BREAK: Flashing celebration lights in Room 304!", "info");
+        this.addActivityLog("🎉 TEACHER ACTION: Started 5-second Classroom Disco Party Break.");
+
+        let count = 0;
+        const interval = setInterval(() => {
+            document.body.style.background = count % 2 === 0 ? "#1e0b36" : "#070a13";
+            count++;
+            if (count > 6) {
+                clearInterval(interval);
+                document.body.style.background = "#070a13";
+            }
+        }, 300);
+    },
+
     openDeskModal: function(studentId) {
         AppState.selectedStudentId = studentId;
         const student = AppState.students.find(s => s.id === studentId);
@@ -371,11 +435,11 @@ const App = {
     },
 
     exportCSVReport: function() {
-        let csv = "data:text/csv;charset=utf-8,ID,Name,EnrollNo,SeatNo,Status,TimerSec,DistanceMeters,PredictedZone,LastPingTimestamp\n";
+        let csv = "data:text/csv;charset=utf-8,ID,Name,EnrollNo,SeatNo,Status,TimerSec,DistanceMeters,PredictedZone,XPPoints,LastPingTimestamp\n";
 
         AppState.students.forEach(s => {
             const dist = LocationEngine.checkGeofence(s.location.lat, s.location.lng).distanceMeters;
-            csv += `${s.id},"${s.name}",${s.enrollNo},${s.seatNo},${s.status},${s.sessionTimer},${dist},"${s.location.prediction}","${s.location.lastPing}"\n`;
+            csv += `${s.id},"${s.name}",${s.enrollNo},${s.seatNo},${s.status},${s.sessionTimer},${dist},"${s.location.prediction}",${s.xpPoints},"${s.location.lastPing}"\n`;
         });
 
         const uri = encodeURI(csv);
@@ -463,12 +527,24 @@ const App = {
             alarmBtn.onclick = () => TimerEngine.triggerClassBellAlarm();
         }
 
-        // Group Chat Submit
-        const chatForm = document.getElementById('groupChatForm');
-        if (chatForm) {
-            chatForm.onsubmit = (e) => {
+        // Group Chat Submit Forms (Teacher & Student forms)
+        const chatFormStudent = document.getElementById('groupChatFormStudent');
+        if (chatFormStudent) {
+            chatFormStudent.onsubmit = (e) => {
                 e.preventDefault();
-                const input = document.getElementById('chatTextInput');
+                const input = document.getElementById('chatTextInputStudent');
+                if (input && input.value) {
+                    ChatEngine.sendMessage(input.value);
+                    input.value = '';
+                }
+            };
+        }
+
+        const chatFormTeacher = document.getElementById('groupChatFormTeacher');
+        if (chatFormTeacher) {
+            chatFormTeacher.onsubmit = (e) => {
+                e.preventDefault();
+                const input = document.getElementById('chatTextInputTeacher');
                 if (input && input.value) {
                     ChatEngine.sendMessage(input.value);
                     input.value = '';

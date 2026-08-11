@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room 304 – Mobile QR Attendance Verification</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px;">
+    
+    <div class="glass-panel" style="max-width: 420px; width: 100%; text-align: center; border-color: var(--border-glow); padding: 32px 24px;">
+        <div class="brand-icon" style="margin: 0 auto 16px; width: 60px; height: 60px; font-size: 2.2rem;">
+            <i class='bx bx-qr-scan'></i>
+        </div>
+
+        <h1 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 6px;">Phone Check-In Verified</h1>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 24px;">Room 304 • Smart AI Classroom System</p>
+
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 16px; border-radius: var(--radius-md); margin-bottom: 24px;">
+            <i class='bx bx-check-circle' style="font-size: 3rem; color: var(--success-green); margin-bottom: 8px;"></i>
+            <h3 id="studentDetectedName" style="font-size: 1.2rem; font-weight: 700; color: var(--success-green);">Aarav Sharma</h3>
+            <p id="studentDetectedEnroll" style="font-size: 0.85rem; color: var(--text-primary);">CS2026-01 • Desk 1A</p>
+            <div class="seat-badge present" style="margin-top: 8px; display: inline-block;">45-MIN SESSION ACTIVE</div>
+        </div>
+
+        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; background: rgba(0,0,0,0.3); padding: 12px; border-radius: var(--radius-md); margin-bottom: 24px; text-align: left;">
+            <div><strong>Location GPS:</strong> Room 304 (Within 30m)</div>
+            <div><strong>Session Timer:</strong> 45:00 Remaining</div>
+            <div><strong>Timestamp:</strong> <span id="scanTimestamp">Just Now</span></div>
+        </div>
+
+        <a href="../index.html" class="btn-primary" style="width: 100%; justify-content: center; text-decoration: none;">
+            <i class='bx bx-home-alt'></i> Open Main Student Portal
+        </a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const enroll = urlParams.get('enroll') || "CS2026-01";
+            const name = urlParams.get('name') || "Aarav Sharma";
+
+            document.getElementById('studentDetectedName').innerText = name;
+            document.getElementById('studentDetectedEnroll').innerText = `${enroll} • Desk 1A`;
+            document.getElementById('scanTimestamp').innerText = new Date().toLocaleTimeString();
+        });
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Smart AI Classroom System - Dual Authentication Gateway, Real-time QR Code Attendance, 45-Min Class Session Timers, GPS Geofencing, Teacher/Student Portals & Live Group Chat.">
+    <meta name="description" content="Smart AI Classroom System - Dual Authentication Gateway, Scannable Phone QR Attendance, 45-Min Class Session Timers, GPS Geofencing, Teacher Annoy Controls & Live Group Chat.">
     <title>Smart AI Classroom System – Portal Gateway & GPS Tracker</title>
     
     <!-- Fonts & Icons -->
@@ -42,8 +42,12 @@
                 <i class='bx bx-timer'></i> Session Timer: <span id="globalClassTimer" style="margin-left: 4px; font-weight: 800;">45:00</span>
             </div>
 
+            <a href="pages/activities.html" class="btn-glass" style="border-color: rgba(127,0,255,0.4); color: #A855F7;">
+                <i class='bx bx-joystick'></i> Free-Time Activity Hub
+            </a>
+
             <button class="btn-glass" id="triggerClassAlarmBtn" style="border-color: rgba(245, 158, 11, 0.4); color: var(--warning-amber);">
-                <i class='bx bx-bell'></i> Trigger Class Alarm
+                <i class='bx bx-bell'></i> Trigger Alarm
             </button>
 
             <button class="btn-primary" onclick="App.exportCSVReport()">
@@ -95,7 +99,7 @@
                 </button>
             </form>
 
-            <!-- STUDENT LOGIN FORM (Hidden by default) -->
+            <!-- STUDENT LOGIN FORM -->
             <form id="studentLoginForm" style="display: none;">
                 <div class="form-group">
                     <label>Student Enrollment No:</label>
@@ -166,11 +170,33 @@
                             <div class="panel-title">
                                 <i class='bx bx-grid-alt'></i> Room 304 Seating Chart (10 Desks)
                             </div>
-                            <small style="color: var(--text-muted);">Click any desk for manual override & GPS prediction</small>
+                            <small style="color: var(--text-muted);">Click desk to view 45-min live session & GPS status</small>
                         </div>
 
                         <div class="seating-grid-container" id="seatingGridContainer">
                             <!-- Rendered dynamically by app.js -->
+                        </div>
+                    </div>
+
+                    <!-- TEACHER ANNOY & SURPRISE CONTROL PANEL -->
+                    <div class="glass-panel" style="border-color: rgba(245, 158, 11, 0.4);">
+                        <div class="panel-header">
+                            <div class="panel-title" style="color: var(--warning-amber);">
+                                <i class='bx bx-zap'></i> Teacher Annoy & Classroom Interaction Panel
+                            </div>
+                            <span class="badge-pill" style="border-color: rgba(245, 158, 11, 0.4); color: var(--warning-amber);">Teacher Exclusive</span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                            <button class="btn-glass" style="border-color: rgba(244, 63, 94, 0.4); color: var(--danger-rose); padding: 12px;" onclick="App.triggerPopQuizAttack()">
+                                <i class='bx bx-error-alt'></i> Pop Quiz Attack!
+                            </button>
+                            <button class="btn-glass" style="border-color: rgba(245, 158, 11, 0.4); color: var(--warning-amber); padding: 12px;" onclick="App.triggerDeskVibration()">
+                                <i class='bx bx-mobile-vibration'></i> Desk Wake-Up Shake
+                            </button>
+                            <button class="btn-glass" style="border-color: rgba(0, 242, 254, 0.4); color: var(--primary-cyan); padding: 12px;" onclick="App.triggerDiscoParty()">
+                                <i class='bx bx-party'></i> 5s Disco Party Break
+                            </button>
                         </div>
                     </div>
 
@@ -210,7 +236,7 @@
 
                 </div>
 
-                <!-- RIGHT COLUMN: Radar Geofence Map, Simulator Controls, Audit Logs -->
+                <!-- RIGHT COLUMN: Radar Geofence Map, Simulator, Teacher Group Chat, Audit Logs -->
                 <div class="right-column" style="display: flex; flex-direction: column; gap: 24px;">
 
                     <!-- Live Classroom Geofence Radar Map -->
@@ -232,6 +258,27 @@
                         <div style="font-size: 0.8rem; color: var(--text-secondary); text-align: center;">
                             <i class='bx bx-info-circle' style="color: var(--primary-cyan);"></i> Verifies student GPS location is within 30m of Room 304 center.
                         </div>
+                    </div>
+
+                    <!-- Teacher View Live Group Chat Box -->
+                    <div class="glass-panel" style="display: flex; flex-direction: column; height: 350px;">
+                        <div class="panel-header" style="margin-bottom: 10px;">
+                            <div class="panel-title">
+                                <i class='bx bx-conversation'></i> Teacher Class Announcements & Chat
+                            </div>
+                            <span class="badge-pill" style="font-size: 0.7rem; padding: 2px 8px;">Instructor Access</span>
+                        </div>
+
+                        <div id="chatMessagesBoxTeacher" style="flex: 1; overflow-y: auto; padding-right: 6px; margin-bottom: 12px;">
+                            <!-- Mirror Chat Messages -->
+                        </div>
+
+                        <form id="groupChatFormTeacher" style="display: flex; gap: 8px;">
+                            <input type="text" id="chatTextInputTeacher" placeholder="Post official announcement to class..." class="form-control" style="flex: 1; border-radius: var(--radius-full); font-size: 0.85rem;" required>
+                            <button type="submit" class="btn-primary" style="padding: 8px 16px; border-radius: var(--radius-full);">
+                                <i class='bx bx-send'></i> Post
+                            </button>
+                        </form>
                     </div>
 
                     <!-- Simulator Controls -->
@@ -273,7 +320,7 @@
                         </form>
                     </div>
 
-                    <!-- Real-Time Activity Logs -->
+                    <!-- Real-Time Activity Audit Logs -->
                     <div class="glass-panel">
                         <div class="panel-header">
                             <div class="panel-title">
@@ -332,6 +379,30 @@
                                     <i class='bx bx-map-pin'></i> Ping Device Live GPS
                                 </button>
                             </div>
+                        </div>
+
+                        <!-- Class XP Leaderboard -->
+                        <div class="glass-panel">
+                            <div class="panel-header">
+                                <div class="panel-title">
+                                    <i class='bx bx-trophy' style="color: var(--warning-amber);"></i> Class XP Leaderboard Rankings
+                                </div>
+                                <a href="pages/activities.html" class="btn-glass" style="padding: 4px 12px; font-size: 0.75rem;">+ Earn XP Points</a>
+                            </div>
+
+                            <table class="roster-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Student</th>
+                                        <th>Enrollment</th>
+                                        <th>XP Points</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leaderboardTableBody">
+                                    <!-- Filled dynamically by app.js -->
+                                </tbody>
+                            </table>
                         </div>
 
                         <!-- Course Timetable Schedule -->
@@ -395,13 +466,13 @@
                             </div>
 
                             <!-- Chat Messages Box -->
-                            <div id="chatMessagesBox" style="flex: 1; overflow-y: auto; padding-right: 6px; margin-bottom: 12px;">
+                            <div id="chatMessagesBoxStudent" style="flex: 1; overflow-y: auto; padding-right: 6px; margin-bottom: 12px;">
                                 <!-- Filled by chat.js -->
                             </div>
 
                             <!-- Send Message Form -->
-                            <form id="groupChatForm" style="display: flex; gap: 8px;">
-                                <input type="text" id="chatTextInput" placeholder="Type a message to class..." class="form-control" style="flex: 1; border-radius: var(--radius-full); font-size: 0.85rem;" required>
+                            <form id="groupChatFormStudent" style="display: flex; gap: 8px;">
+                                <input type="text" id="chatTextInputStudent" placeholder="Type a message to class..." class="form-control" style="flex: 1; border-radius: var(--radius-full); font-size: 0.85rem;" required>
                                 <button type="submit" class="btn-primary" style="padding: 8px 16px; border-radius: var(--radius-full);">
                                     <i class='bx bx-send'></i> Send
                                 </button>
@@ -431,11 +502,17 @@
             </div>
             
             <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px;">
-                Scan this dynamic QR token upon entering Room 304 to register your 45-min class session.
+                Scan this QR token with your phone camera or click mobile link to check in.
             </p>
 
             <div class="qr-container" style="background: #0B0F19; border-radius: var(--radius-md); padding: 12px; display: flex; justify-content: center; align-items: center;">
                 <canvas id="qrCanvasElem" width="180" height="180" style="border-radius: 8px;"></canvas>
+            </div>
+
+            <div style="text-align: center; margin-top: 8px; margin-bottom: 8px;">
+                <a href="pages/scan.html?enroll=CS2026-01" target="_blank" class="btn-glass" style="padding: 4px 12px; font-size: 0.72rem; color: var(--primary-cyan); border-color: rgba(0,242,254,0.3);">
+                    <i class='bx bx-mobile-alt'></i> Open Mobile Camera Check-In Page
+                </a>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
