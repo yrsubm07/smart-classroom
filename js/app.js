@@ -4,7 +4,8 @@ const AppState = {
     students: INITIAL_STUDENTS,
     filterStatus: "all",
     searchQuery: "",
-    selectedStudentId: "STU-101"
+    selectedStudentId: "STU-101",
+    activityLogs: []
 };
 
 const App = {
@@ -29,12 +30,27 @@ const App = {
         this.bindEvents();
     },
 
+    toggleKebabMenu: function(e) {
+        if (e) e.stopPropagation();
+        const menu = document.getElementById('kebabDropdownMenu');
+        if (menu) {
+            menu.classList.toggle('active');
+        }
+    },
+
+    closeKebabMenu: function() {
+        const menu = document.getElementById('kebabDropdownMenu');
+        if (menu) {
+            menu.classList.remove('active');
+        }
+    },
+
     showLoginScreen: function() {
         const loginView = document.getElementById('loginGatewayView');
         const mainApp = document.getElementById('mainAppContainer');
         const navActions = document.getElementById('userNavbarActions');
 
-        if (loginView) loginView.style.display = 'flex';
+        if (loginView) loginView.style.display = 'block';
         if (mainApp) mainApp.style.display = 'none';
         if (navActions) navActions.style.display = 'none';
     },
@@ -105,7 +121,6 @@ const App = {
         ChatEngine.renderMessages();
     },
 
-    // Metrics summary stats
     renderStats: function() {
         const total = AppState.students.length;
         const presentCount = AppState.students.filter(s => s.status === "Present" && s.location.inZone).length;
@@ -126,7 +141,6 @@ const App = {
         if (breachElem) breachElem.innerText = breachCount;
     },
 
-    // Teacher QR Scan Real-Time Analytics Badge
     renderQRAnalyticsBadge: function() {
         const qrScannedCount = AppState.students.filter(s => s.scannedViaQR).length;
         const total = AppState.students.length;
@@ -137,7 +151,6 @@ const App = {
         }
     },
 
-    // 10 Desk Seating Chart
     renderSeatingGrid: function() {
         const container = document.getElementById('seatingGridContainer');
         if (!container) return;
@@ -180,7 +193,6 @@ const App = {
         });
     },
 
-    // Radar Map Pins
     renderRadarMap: function() {
         const container = document.getElementById('radarMapContainer');
         if (!container) return;
@@ -197,11 +209,11 @@ const App = {
             const latDiff = (student.location.lat - CLASSROOM_GEOFENCE.centerLat) * 140000;
             const lngDiff = (student.location.lng - CLASSROOM_GEOFENCE.centerLng) * 140000;
 
-            const x = 110 + lngDiff;
-            const y = 110 - latDiff;
+            const x = 100 + lngDiff;
+            const y = 100 - latDiff;
 
-            pin.style.left = `${Math.min(Math.max(x, 15), 205)}px`;
-            pin.style.top = `${Math.min(Math.max(y, 15), 205)}px`;
+            pin.style.left = `${Math.min(Math.max(x, 10), 180)}px`;
+            pin.style.top = `${Math.min(Math.max(y, 10), 180)}px`;
             pin.title = `${student.name}: ${student.location.prediction}`;
 
             pin.onclick = () => this.showNotification(`GPS Fix: ${student.name} - ${student.location.prediction}`, student.location.inZone ? "info" : "warning");
@@ -210,7 +222,6 @@ const App = {
         });
     },
 
-    // Student Roster Directory Table with Remove Student Action
     renderStudentTable: function() {
         const tbody = document.getElementById('studentTableBody');
         if (!tbody) return;
@@ -238,7 +249,7 @@ const App = {
             let statusBadge = `<span class="seat-badge absent">Absent</span>`;
             if (s.status === "Present") {
                 statusBadge = s.location.inZone 
-                    ? `<span class="seat-badge present">Present (In Zone)</span>` 
+                    ? `<span class="seat-badge present">Present</span>` 
                     : `<span class="seat-badge warning">Out of Range</span>`;
             }
 
@@ -258,19 +269,21 @@ const App = {
                 <td>${statusBadge}</td>
                 <td><strong>${s.sessionActive ? TimerEngine.formatTime(s.sessionTimer) : "Inactive"}</strong></td>
                 <td>
-                    <div style="font-size: 0.8rem; font-weight: 600;">${s.location.prediction}</div>
+                    <div style="font-size: 0.78rem; font-weight: 600;">${s.location.prediction}</div>
                     <small style="color: var(--text-muted);">${dist}m • ${s.location.lastPing}</small>
                 </td>
                 <td>
-                    <button class="btn-primary" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 6px;" onclick="QREngine.processScan('${s.id}')">
-                        <i class='bx bx-qr-scan'></i> Check-In
-                    </button>
-                    <button class="btn-glass" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 6px;" onclick="LocationEngine.pingRealGPS('${s.id}')">
-                        <i class='bx bx-map-pin'></i> GPS
-                    </button>
-                    <button class="btn-delete" onclick="App.removeStudent('${s.id}')" title="Remove Student">
-                        <i class='bx bx-trash'></i>
-                    </button>
+                    <div style="display: flex; gap: 4px;">
+                        <button class="btn-primary" style="padding: 3px 8px; font-size: 0.72rem; border-radius: 6px;" onclick="QREngine.processScan('${s.id}')">
+                            <i class='bx bx-qr-scan'></i> Scan
+                        </button>
+                        <button class="btn-glass" style="padding: 3px 8px; font-size: 0.72rem; border-radius: 6px;" onclick="LocationEngine.pingRealGPS('${s.id}')">
+                            <i class='bx bx-map-pin'></i> GPS
+                        </button>
+                        <button class="btn-delete" onclick="App.removeStudent('${s.id}')" title="Remove Student">
+                            <i class='bx bx-trash'></i>
+                        </button>
+                    </div>
                 </td>
             `;
 
@@ -278,7 +291,6 @@ const App = {
         });
     },
 
-    // DYNAMICALLY ADD NEW STUDENT TO ROSTER
     addNewStudent: function(name, enrollNo, seatNo) {
         if (!name || !enrollNo) {
             this.showNotification("Please enter student name and enrollment number!", "error");
@@ -311,7 +323,6 @@ const App = {
         this.closeAddStudentModal();
     },
 
-    // REMOVE STUDENT FROM ROSTER
     removeStudent: function(id) {
         const student = AppState.students.find(s => s.id === id);
         if (!student) return;
@@ -336,7 +347,6 @@ const App = {
         if (modal) modal.style.display = 'none';
     },
 
-    // Class Leaderboard (XP Rankings)
     renderLeaderboard: function() {
         const tbody = document.getElementById('leaderboardTableBody');
         if (!tbody) return;
@@ -434,7 +444,6 @@ const App = {
         }
     },
 
-    // TEACHER ANNOY CONTROLS
     triggerPopQuizAttack: function() {
         QREngine.playBeepSound();
         this.showNotification("⚡ POP QUIZ ATTACK! Triggering 10-second sudden quiz alert on student screens...", "warning");
@@ -545,22 +554,14 @@ const App = {
     },
 
     bindEvents: function() {
-        // KEBAB 3-DOT MENU TOGGLE
-        const kebabBtn = document.getElementById('kebabMenuBtn');
-        const kebabDropdown = document.getElementById('kebabDropdownMenu');
-
-        if (kebabBtn && kebabDropdown) {
-            kebabBtn.onclick = (e) => {
-                e.stopPropagation();
-                kebabDropdown.classList.toggle('active');
-            };
-
-            document.addEventListener('click', (e) => {
-                if (!kebabDropdown.contains(e.target) && e.target !== kebabBtn) {
-                    kebabDropdown.classList.remove('active');
-                }
-            });
-        }
+        // Document level click listener to close kebab dropdown on outside click
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('kebabDropdownMenu');
+            const btn = document.getElementById('kebabMenuBtn');
+            if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+                menu.classList.remove('active');
+            }
+        });
 
         // Add Student Form submit
         const addStudentForm = document.getElementById('addStudentForm');
@@ -619,15 +620,6 @@ const App = {
             };
         }
 
-        // Logout
-        const logoutBtn = document.getElementById('kebabLogoutBtn');
-        if (logoutBtn) {
-            logoutBtn.onclick = () => {
-                if (kebabDropdown) kebabDropdown.classList.remove('active');
-                AuthEngine.logout();
-            };
-        }
-
         // Floating QR toggle
         const toggleBtn = document.getElementById('qrToggleBtn');
         const qrModal = document.getElementById('qrWidgetModal');
@@ -644,15 +636,6 @@ const App = {
             refreshQrBtn.onclick = () => {
                 QREngine.refreshQRCode();
                 App.showNotification("QR Token refreshed!", "info");
-            };
-        }
-
-        // Class Bell Alarm Trigger Button
-        const alarmBtn = document.getElementById('kebabAlarmBtn');
-        if (alarmBtn) {
-            alarmBtn.onclick = () => {
-                if (kebabDropdown) kebabDropdown.classList.remove('active');
-                TimerEngine.triggerClassBellAlarm();
             };
         }
 

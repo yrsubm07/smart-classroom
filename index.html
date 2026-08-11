@@ -26,7 +26,7 @@
     <!-- Toast Notifications Container -->
     <div id="toast-container"></div>
 
-    <!-- ========== NAVIGATION BAR WITH 3-DOT KEBAB SYSTEM ========== -->
+    <!-- ========== NAVIGATION BAR WITH INSTA, LINKEDIN & 3-DOT KEBAB SYSTEM ========== -->
     <nav class="navbar">
         <div class="brand">
             <div class="brand-icon"><i class='bx bx-qr-scan'></i></div>
@@ -34,6 +34,15 @@
         </div>
 
         <div class="header-actions" id="userNavbarActions" style="display: none;">
+            
+            <!-- Instagram & LinkedIn Buttons for username 'yrsubm' -->
+            <a href="https://instagram.com/yrsubm" target="_blank" class="social-link-btn" title="Follow yrsubm on Instagram">
+                <i class='bx bxl-instagram'></i>
+            </a>
+            <a href="https://linkedin.com/in/yrsubm" target="_blank" class="social-link-btn" title="Connect with yrsubm on LinkedIn">
+                <i class='bx bxl-linkedin'></i>
+            </a>
+
             <!-- Live Classroom Status Pill -->
             <div class="badge-pill">
                 <div class="pulse-dot"></div>
@@ -42,7 +51,7 @@
 
             <!-- Sleek 3-Dot Kebab Menu System -->
             <div class="kebab-menu-container">
-                <button class="kebab-btn" id="kebabMenuBtn" title="Classroom Quick Actions Menu">
+                <button class="kebab-btn" id="kebabMenuBtn" onclick="App.toggleKebabMenu(event)" title="Classroom Quick Actions Menu">
                     <i class='bx bx-dots-vertical-rounded'></i>
                 </button>
 
@@ -57,12 +66,12 @@
                         <span>Session Timer: <strong id="globalClassTimer" style="color: var(--warning-amber);">45:00</strong></span>
                     </div>
 
-                    <button class="kebab-item" id="kebabAlarmBtn">
+                    <button class="kebab-item" onclick="TimerEngine.triggerClassBellAlarm(); App.closeKebabMenu();">
                         <i class='bx bx-bell' style="color: var(--warning-amber);"></i>
                         <span>Trigger Class Alarm</span>
                     </button>
 
-                    <button class="kebab-item" onclick="App.exportCSVReport(); document.getElementById('kebabDropdownMenu').classList.remove('active');">
+                    <button class="kebab-item" onclick="App.exportCSVReport(); App.closeKebabMenu();">
                         <i class='bx bx-download' style="color: var(--success-green);"></i>
                         <span>Export Attendance CSV</span>
                     </button>
@@ -72,8 +81,18 @@
                         <span>Free-Time Quiz Hub</span>
                     </a>
 
+                    <a href="https://instagram.com/yrsubm" target="_blank" class="kebab-item">
+                        <i class='bx bxl-instagram' style="color: #E1306C;"></i>
+                        <span>Instagram (@yrsubm)</span>
+                    </a>
+
+                    <a href="https://linkedin.com/in/yrsubm" target="_blank" class="kebab-item">
+                        <i class='bx bxl-linkedin' style="color: #0A66C2;"></i>
+                        <span>LinkedIn (@yrsubm)</span>
+                    </a>
+
                     <div style="border-top: 1px solid var(--border-color); margin-top: 4px; padding-top: 4px;">
-                        <button class="kebab-item" id="kebabLogoutBtn" style="color: var(--danger-rose);">
+                        <button class="kebab-item" onclick="AuthEngine.logout(); App.closeKebabMenu();" style="color: var(--danger-rose);">
                             <i class='bx bx-log-out'></i>
                             <span>Logout</span>
                         </button>
@@ -85,57 +104,67 @@
 
     <!-- ========== 1. DUAL AUTHENTICATION LOGIN GATEWAY ========== -->
     <div class="login-gateway-view" id="loginGatewayView">
-        <div class="login-card">
+        <div class="login-card" style="width: 100%; max-width: 420px; margin: 40px auto; background: rgba(15, 23, 42, 0.85); border: 1px solid var(--border-glow); border-radius: var(--radius-lg); padding: 32px 24px; backdrop-filter: blur(25px);">
             <div style="text-align: center; margin-bottom: 24px;">
-                <div class="brand-icon" style="margin: 0 auto 12px; width: 54px; height: 54px; font-size: 2rem;">
+                <div class="brand-icon" style="margin: 0 auto 12px; width: 50px; height: 50px; font-size: 1.8rem;">
                     <i class='bx bx-qr-scan'></i>
                 </div>
-                <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 6px;">Smart Classroom Portal</h1>
-                <p style="font-size: 0.85rem; color: var(--text-secondary);">Room 304 • Select Login Role to Access System</p>
+                <h1 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 4px;">Smart Classroom Portal</h1>
+                <p style="font-size: 0.82rem; color: var(--text-secondary);">Room 304 • Select Role to Login</p>
+                
+                <!-- Social Media Buttons -->
+                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+                    <a href="https://instagram.com/yrsubm" target="_blank" class="social-link-btn" title="Instagram">
+                        <i class='bx bxl-instagram'></i>
+                    </a>
+                    <a href="https://linkedin.com/in/yrsubm" target="_blank" class="social-link-btn" title="LinkedIn">
+                        <i class='bx bxl-linkedin'></i>
+                    </a>
+                </div>
             </div>
 
             <!-- Dual Role Tabs -->
-            <div class="login-tabs">
-                <button class="login-tab-btn active" id="teacherTabBtn">
+            <div class="login-tabs" style="display: flex; background: rgba(0, 0, 0, 0.3); padding: 4px; border-radius: var(--radius-full); margin-bottom: 24px; border: 1px solid var(--border-color);">
+                <button class="login-tab-btn active" id="teacherTabBtn" style="flex: 1; padding: 10px; border-radius: var(--radius-full); border: none; background: transparent; color: var(--text-secondary); font-weight: 700; font-size: 0.85rem; cursor: pointer;">
                     <i class='bx bx-chalkboard'></i> Teacher Login
                 </button>
-                <button class="login-tab-btn" id="studentTabBtn">
+                <button class="login-tab-btn" id="studentTabBtn" style="flex: 1; padding: 10px; border-radius: var(--radius-full); border: none; background: transparent; color: var(--text-secondary); font-weight: 700; font-size: 0.85rem; cursor: pointer;">
                     <i class='bx bx-user-pin'></i> Student Login
                 </button>
             </div>
 
             <!-- TEACHER LOGIN FORM -->
             <form id="teacherLoginForm">
-                <div class="form-group">
-                    <label>Teacher ID / Username:</label>
-                    <input type="text" id="teacherIdInput" class="form-control" placeholder="e.g. T-304 or teacher" value="T-304" required>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Teacher ID / Username:</label>
+                    <input type="text" id="teacherIdInput" class="form-control" placeholder="e.g. T-304 or teacher" value="T-304" style="width: 100%; padding: 10px 14px; border-radius: var(--radius-md); background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: #fff;" required>
                     <small style="color: var(--text-muted); font-size: 0.72rem; margin-top: 4px; display: block;">Default Teacher ID: <strong>T-304</strong> or <strong>teacher</strong></small>
                 </div>
 
-                <div class="form-group">
-                    <label>Password:</label>
-                    <input type="password" id="teacherPassInput" class="form-control" placeholder="••••••••" value="admin123" required>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Password:</label>
+                    <input type="password" id="teacherPassInput" class="form-control" placeholder="••••••••" value="admin123" style="width: 100%; padding: 10px 14px; border-radius: var(--radius-md); background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: #fff;" required>
                 </div>
 
-                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
-                    <i class='bx bx-log-in-circle'></i> Login to Teacher Control Dashboard
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 10px;">
+                    <i class='bx bx-log-in-circle'></i> Login to Teacher Dashboard
                 </button>
             </form>
 
             <!-- STUDENT LOGIN FORM -->
             <form id="studentLoginForm" style="display: none;">
-                <div class="form-group">
-                    <label>Student Enrollment No:</label>
-                    <input type="text" id="studentEnrollInput" class="form-control" placeholder="e.g. CS2026-01" value="CS2026-01" required>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Student Enrollment No:</label>
+                    <input type="text" id="studentEnrollInput" class="form-control" placeholder="e.g. CS2026-01" value="CS2026-01" style="width: 100%; padding: 10px 14px; border-radius: var(--radius-md); background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: #fff;" required>
                     <small style="color: var(--text-muted); font-size: 0.72rem; margin-top: 4px; display: block;">Sample Enroll Numbers: <strong>CS2026-01</strong> to <strong>CS2026-10</strong></small>
                 </div>
 
-                <div class="form-group">
-                    <label>Password:</label>
-                    <input type="password" id="studentPassInput" class="form-control" placeholder="••••••••" value="password123" required>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Password:</label>
+                    <input type="password" id="studentPassInput" class="form-control" placeholder="••••••••" value="password123" style="width: 100%; padding: 10px 14px; border-radius: var(--radius-md); background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: #fff;" required>
                 </div>
 
-                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 10px;">
                     <i class='bx bx-user-check'></i> Login to Student Self-Portal
                 </button>
             </form>
@@ -185,7 +214,7 @@
             <div class="dashboard-grid" id="teacherDashboardView">
 
                 <!-- LEFT COLUMN: Seating Grid & Student Directory -->
-                <div class="left-column" style="display: flex; flex-direction: column; gap: 24px;">
+                <div class="left-column" style="display: flex; flex-direction: column; gap: 20px;">
                     
                     <!-- Interactive Room 304 Seating Chart -->
                     <div class="glass-panel">
@@ -208,66 +237,68 @@
                     <div class="glass-panel" style="border-color: rgba(245, 158, 11, 0.4);">
                         <div class="panel-header">
                             <div class="panel-title" style="color: var(--warning-amber);">
-                                <i class='bx bx-zap'></i> Teacher Annoy & Classroom Interaction Panel
+                                <i class='bx bx-zap'></i> Teacher Annoy & Classroom Controls
                             </div>
                             <span class="badge-pill" style="border-color: rgba(245, 158, 11, 0.4); color: var(--warning-amber);">Teacher Exclusive</span>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
-                            <button class="btn-glass" style="border-color: rgba(244, 63, 94, 0.4); color: var(--danger-rose); padding: 12px;" onclick="App.triggerPopQuizAttack()">
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                            <button class="btn-glass" style="border-color: rgba(244, 63, 94, 0.4); color: var(--danger-rose); padding: 10px;" onclick="App.triggerPopQuizAttack()">
                                 <i class='bx bx-error-alt'></i> Pop Quiz Attack!
                             </button>
-                            <button class="btn-glass" style="border-color: rgba(245, 158, 11, 0.4); color: var(--warning-amber); padding: 12px;" onclick="App.triggerDeskVibration()">
+                            <button class="btn-glass" style="border-color: rgba(245, 158, 11, 0.4); color: var(--warning-amber); padding: 10px;" onclick="App.triggerDeskVibration()">
                                 <i class='bx bx-mobile-vibration'></i> Desk Wake-Up Shake
                             </button>
-                            <button class="btn-glass" style="border-color: rgba(0, 242, 254, 0.4); color: var(--primary-cyan); padding: 12px;" onclick="App.triggerDiscoParty()">
-                                <i class='bx bx-party'></i> 5s Disco Party Break
+                            <button class="btn-glass" style="border-color: rgba(0, 242, 254, 0.4); color: var(--primary-cyan); padding: 10px;" onclick="App.triggerDiscoParty()">
+                                <i class='bx bx-party'></i> 5s Disco Break
                             </button>
                         </div>
                     </div>
 
                     <!-- Student Roster Directory Table with Add/Remove Feature -->
                     <div class="glass-panel">
-                        <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
+                        <div class="panel-header" style="flex-wrap: wrap; gap: 10px;">
                             <div class="panel-title">
                                 <i class='bx bx-list-ul'></i> Student Directory Management
                             </div>
 
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <button class="btn-primary" style="padding: 6px 14px; font-size: 0.8rem;" onclick="App.openAddStudentModal()">
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                <button class="btn-primary" style="padding: 6px 12px; font-size: 0.78rem;" onclick="App.openAddStudentModal()">
                                     <i class='bx bx-user-plus'></i> + Add Student
                                 </button>
 
-                                <input type="text" id="studentSearchInput" placeholder="Search name or enrollment..." class="btn-glass" style="padding: 6px 14px; font-size: 0.82rem; outline: none; border-radius: var(--radius-full); width: 170px;">
+                                <input type="text" id="studentSearchInput" placeholder="Search student..." class="btn-glass" style="padding: 6px 12px; font-size: 0.78rem; outline: none; border-radius: var(--radius-full); width: 140px;">
 
-                                <button class="btn-primary filter-btn" data-filter="all" style="padding: 6px 10px; font-size: 0.78rem;">All</button>
-                                <button class="btn-glass filter-btn" data-filter="present" style="padding: 6px 10px; font-size: 0.78rem;">Present</button>
-                                <button class="btn-glass filter-btn" data-filter="breach" style="padding: 6px 10px; font-size: 0.78rem;">Breach</button>
-                                <button class="btn-glass filter-btn" data-filter="absent" style="padding: 6px 10px; font-size: 0.78rem;">Absent</button>
+                                <button class="btn-primary filter-btn" data-filter="all" style="padding: 4px 8px; font-size: 0.75rem;">All</button>
+                                <button class="btn-glass filter-btn" data-filter="present" style="padding: 4px 8px; font-size: 0.75rem;">Present</button>
+                                <button class="btn-glass filter-btn" data-filter="breach" style="padding: 4px 8px; font-size: 0.75rem;">Breach</button>
+                                <button class="btn-glass filter-btn" data-filter="absent" style="padding: 4px 8px; font-size: 0.75rem;">Absent</button>
                             </div>
                         </div>
 
-                        <table class="roster-table">
-                            <thead>
-                                <tr>
-                                    <th>Student Details</th>
-                                    <th>Desk</th>
-                                    <th>Status</th>
-                                    <th>45-Min Timer</th>
-                                    <th>Location Prediction</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="studentTableBody">
-                                <!-- Rendered dynamically by app.js -->
-                            </tbody>
-                        </table>
+                        <div style="overflow-x: auto;">
+                            <table class="roster-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student Details</th>
+                                        <th>Desk</th>
+                                        <th>Status</th>
+                                        <th>45-Min Timer</th>
+                                        <th>Location Prediction</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentTableBody">
+                                    <!-- Rendered dynamically by app.js -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                 </div>
 
                 <!-- RIGHT COLUMN: Radar Geofence Map, Simulator, Teacher Group Chat, Audit Logs -->
-                <div class="right-column" style="display: flex; flex-direction: column; gap: 24px;">
+                <div class="right-column" style="display: flex; flex-direction: column; gap: 20px;">
 
                     <!-- Live Classroom Geofence Radar Map -->
                     <div class="glass-panel">
@@ -275,7 +306,7 @@
                             <div class="panel-title">
                                 <i class='bx bx-radar'></i> Live Geofence Radar Map
                             </div>
-                            <span class="badge-pill" style="font-size: 0.75rem; padding: 2px 10px;">Radius: 30m</span>
+                            <span class="badge-pill" style="font-size: 0.72rem; padding: 2px 8px;">Radius: 30m</span>
                         </div>
 
                         <div class="radar-map-container" id="radarMapContainer">
@@ -285,27 +316,26 @@
                             <div class="radar-sweep"></div>
                         </div>
 
-                        <div style="font-size: 0.8rem; color: var(--text-secondary); text-align: center;">
-                            <i class='bx bx-info-circle' style="color: var(--primary-cyan);"></i> Verifies student GPS location is within 30m of Room 304 center.
+                        <div style="font-size: 0.78rem; color: var(--text-secondary); text-align: center;">
+                            <i class='bx bx-info-circle' style="color: var(--primary-cyan);"></i> Verifies student GPS location is within 30m of Room 304.
                         </div>
                     </div>
 
                     <!-- Teacher View Live Group Chat Box -->
-                    <div class="glass-panel" style="display: flex; flex-direction: column; height: 350px;">
-                        <div class="panel-header" style="margin-bottom: 10px;">
+                    <div class="glass-panel" style="display: flex; flex-direction: column; height: 330px;">
+                        <div class="panel-header" style="margin-bottom: 8px;">
                             <div class="panel-title">
-                                <i class='bx bx-conversation'></i> Teacher Class Announcements & Chat
+                                <i class='bx bx-conversation'></i> Teacher Announcements & Chat
                             </div>
-                            <span class="badge-pill" style="font-size: 0.7rem; padding: 2px 8px;">Instructor Access</span>
                         </div>
 
-                        <div id="chatMessagesBoxTeacher" style="flex: 1; overflow-y: auto; padding-right: 6px; margin-bottom: 12px;">
+                        <div id="chatMessagesBoxTeacher" style="flex: 1; overflow-y: auto; padding-right: 4px; margin-bottom: 10px;">
                             <!-- Mirror Chat Messages -->
                         </div>
 
-                        <form id="groupChatFormTeacher" style="display: flex; gap: 8px;">
-                            <input type="text" id="chatTextInputTeacher" placeholder="Post official announcement to class..." class="form-control" style="flex: 1; border-radius: var(--radius-full); font-size: 0.85rem;" required>
-                            <button type="submit" class="btn-primary" style="padding: 8px 16px; border-radius: var(--radius-full);">
+                        <form id="groupChatFormTeacher" style="display: flex; gap: 6px;">
+                            <input type="text" id="chatTextInputTeacher" placeholder="Post announcement to class..." class="form-control" style="flex: 1; border-radius: var(--radius-full); font-size: 0.82rem; padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: #fff;" required>
+                            <button type="submit" class="btn-primary" style="padding: 8px 14px; border-radius: var(--radius-full);">
                                 <i class='bx bx-send'></i> Post
                             </button>
                         </form>
@@ -320,31 +350,31 @@
                         </div>
 
                         <!-- Simulate QR Scan -->
-                        <form id="simulateScanForm" style="margin-bottom: 20px;">
-                            <label style="font-size: 0.82rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">
-                                Simulate Student Scanning Corner QR Code:
+                        <form id="simulateScanForm" style="margin-bottom: 16px;">
+                            <label style="font-size: 0.78rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                                Simulate Student QR Check-In:
                             </label>
-                            <div style="display: flex; gap: 10px;">
-                                <select id="scanStudentSelect" class="btn-glass" style="flex: 1; border-radius: var(--radius-sm); outline: none; font-size: 0.85rem;">
+                            <div style="display: flex; gap: 8px;">
+                                <select id="scanStudentSelect" class="btn-glass" style="flex: 1; border-radius: var(--radius-sm); outline: none; font-size: 0.82rem; padding: 6px 10px;">
                                     <!-- Filled by JS -->
                                 </select>
-                                <button type="submit" class="btn-primary" style="border-radius: var(--radius-sm); font-size: 0.85rem; padding: 8px 16px;">
-                                    <i class='bx bx-qr-scan'></i> Check-In
+                                <button type="submit" class="btn-primary" style="border-radius: var(--radius-sm); font-size: 0.8rem; padding: 6px 12px;">
+                                    <i class='bx bx-qr-scan'></i> Scan
                                 </button>
                             </div>
                         </form>
 
                         <!-- Simulate Geofence Breach -->
                         <form id="simulateBreachForm">
-                            <label style="font-size: 0.82rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">
-                                Simulate Student Leaving Room (Geofence Breach):
+                            <label style="font-size: 0.78rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                                Simulate Student Geofence Breach:
                             </label>
-                            <div style="display: flex; gap: 10px;">
-                                <select id="breachStudentSelect" class="btn-glass" style="flex: 1; border-radius: var(--radius-sm); outline: none; font-size: 0.85rem;">
+                            <div style="display: flex; gap: 8px;">
+                                <select id="breachStudentSelect" class="btn-glass" style="flex: 1; border-radius: var(--radius-sm); outline: none; font-size: 0.82rem; padding: 6px 10px;">
                                     <!-- Filled by JS -->
                                 </select>
-                                <button type="submit" class="btn-glass" style="border-color: rgba(245, 158, 11, 0.4); color: var(--warning-amber); border-radius: var(--radius-sm); font-size: 0.85rem; padding: 8px 16px;">
-                                    <i class='bx bx-walk'></i> Breach Geofence
+                                <button type="submit" class="btn-glass" style="border-color: rgba(245, 158, 11, 0.4); color: var(--warning-amber); border-radius: var(--radius-sm); font-size: 0.8rem; padding: 6px 12px;">
+                                    <i class='bx bx-walk'></i> Breach
                                 </button>
                             </div>
                         </form>
@@ -372,41 +402,41 @@
                 <div class="dashboard-grid">
                     
                     <!-- LEFT COLUMN: Student Profile Card & Class Timetable -->
-                    <div class="left-column" style="display: flex; flex-direction: column; gap: 24px;">
+                    <div class="left-column" style="display: flex; flex-direction: column; gap: 20px;">
                         
                         <!-- Student Self Profile & Active Session Timer Card -->
-                        <div class="glass-panel" style="text-align: center; padding: 32px 24px;">
-                            <img id="portalStudentAvatar" src="" alt="Student Avatar" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary-cyan); margin-bottom: 12px; object-fit: cover;">
-                            <h2 id="portalStudentName" style="font-size: 1.5rem; font-weight: 800;">Aarav Sharma</h2>
-                            <p id="portalStudentEnroll" style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 16px;">CS2026-01 • Desk 1A</p>
+                        <div class="glass-panel" style="text-align: center; padding: 24px 16px;">
+                            <img id="portalStudentAvatar" src="" alt="Student Avatar" style="width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--primary-cyan); margin-bottom: 8px; object-fit: cover;">
+                            <h2 id="portalStudentName" style="font-size: 1.4rem; font-weight: 800;">Aarav Sharma</h2>
+                            <p id="portalStudentEnroll" style="color: var(--text-secondary); font-size: 0.82rem; margin-bottom: 12px;">CS2026-01 • Desk 1A</p>
 
-                            <div id="portalStatusBadge" class="seat-badge absent" style="font-size: 0.88rem; padding: 6px 18px; margin-bottom: 20px; display: inline-block;">NOT CHECKED IN YET</div>
+                            <div id="portalStatusBadge" class="seat-badge absent" style="font-size: 0.82rem; padding: 4px 14px; margin-bottom: 16px; display: inline-block;">NOT CHECKED IN YET</div>
 
                             <!-- 45-Min Session Countdown -->
-                            <div style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px; margin-bottom: 20px;">
-                                <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Active Class Session Countdown</div>
-                                <div id="studentPortalTimer" style="font-size: 2.8rem; font-weight: 800; color: var(--primary-cyan); line-height: 1.2;">45:00</div>
+                            <div style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
+                                <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Active Class Session Countdown</div>
+                                <div id="studentPortalTimer" style="font-size: 2.5rem; font-weight: 800; color: var(--primary-cyan); line-height: 1.2;">45:00</div>
                                 <small style="color: var(--text-secondary);">Session auto-expires after 45 minutes</small>
                             </div>
 
                             <!-- Location & Distance Card -->
-                            <div style="display: flex; justify-content: space-around; background: rgba(255,255,255,0.02); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-around; background: rgba(255,255,255,0.02); padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 16px;">
                                 <div>
                                     <small style="color: var(--text-muted); display: block;">GPS Distance to Room 304</small>
-                                    <strong id="portalDistanceText" style="font-size: 1.1rem; color: var(--success-green);">12 Meters</strong>
+                                    <strong id="portalDistanceText" style="font-size: 1rem; color: var(--success-green);">12 Meters</strong>
                                 </div>
                                 <div>
                                     <small style="color: var(--text-muted); display: block;">Predicted Location Zone</small>
-                                    <strong id="portalPredictionText" style="font-size: 1.1rem; color: var(--primary-cyan);">Inside Room 304</strong>
+                                    <strong id="portalPredictionText" style="font-size: 1rem; color: var(--primary-cyan);">Inside Room 304</strong>
                                 </div>
                             </div>
 
-                            <div style="display: flex; gap: 12px; justify-content: center;">
+                            <div style="display: flex; gap: 10px; justify-content: center;">
                                 <button class="btn-primary" style="flex: 1; justify-content: center;" onclick="QREngine.processScan(AuthEngine.currentUser.id)">
-                                    <i class='bx bx-qr-scan'></i> Check In via QR Code
+                                    <i class='bx bx-qr-scan'></i> Check In via QR
                                 </button>
                                 <button class="btn-glass" style="flex: 1; justify-content: center;" onclick="LocationEngine.pingRealGPS(AuthEngine.currentUser.id)">
-                                    <i class='bx bx-map-pin'></i> Ping Device Live GPS
+                                    <i class='bx bx-map-pin'></i> Ping Device GPS
                                 </button>
                             </div>
                         </div>
@@ -415,95 +445,96 @@
                         <div class="glass-panel">
                             <div class="panel-header">
                                 <div class="panel-title">
-                                    <i class='bx bx-trophy' style="color: var(--warning-amber);"></i> Class XP Leaderboard Rankings
+                                    <i class='bx bx-trophy' style="color: var(--warning-amber);"></i> Class XP Leaderboard
                                 </div>
-                                <a href="pages/activities.html" class="btn-glass" style="padding: 4px 12px; font-size: 0.75rem;">+ Earn XP Points</a>
+                                <a href="pages/activities.html" class="btn-glass" style="padding: 2px 10px; font-size: 0.72rem;">+ Earn XP</a>
                             </div>
 
-                            <table class="roster-table">
-                                <thead>
-                                    <tr>
-                                        <th>Rank</th>
-                                        <th>Student</th>
-                                        <th>Enrollment</th>
-                                        <th>XP Points</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="leaderboardTableBody">
-                                    <!-- Filled dynamically by app.js -->
-                                </tbody>
-                            </table>
+                            <div style="overflow-x: auto;">
+                                <table class="roster-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Rank</th>
+                                            <th>Student</th>
+                                            <th>Enrollment</th>
+                                            <th>XP Points</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="leaderboardTableBody">
+                                        <!-- Filled dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                         <!-- Course Timetable Schedule -->
                         <div class="glass-panel">
                             <div class="panel-header">
                                 <div class="panel-title">
-                                    <i class='bx bx-calendar-event'></i> Today's Class Timetable & Schedule
+                                    <i class='bx bx-calendar-event'></i> Today's Timetable
                                 </div>
                             </div>
 
-                            <table class="roster-table">
-                                <thead>
-                                    <tr>
-                                        <th>Time</th>
-                                        <th>Subject</th>
-                                        <th>Venue</th>
-                                        <th>Instructor</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="scheduleTableBody">
-                                    <!-- Filled dynamically -->
-                                </tbody>
-                            </table>
+                            <div style="overflow-x: auto;">
+                                <table class="roster-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Time</th>
+                                            <th>Subject</th>
+                                            <th>Venue</th>
+                                            <th>Instructor</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="scheduleTableBody">
+                                        <!-- Filled dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                     </div>
 
                     <!-- RIGHT COLUMN: Assigned Teacher Info & Real-Time Group Chat -->
-                    <div class="right-column" style="display: flex; flex-direction: column; gap: 24px;">
+                    <div class="right-column" style="display: flex; flex-direction: column; gap: 20px;">
                         
                         <!-- Teacher Info Card -->
                         <div class="glass-panel">
                             <div class="panel-header">
                                 <div class="panel-title">
-                                    <i class='bx bx-user-voice'></i> Course Instructor Information
+                                    <i class='bx bx-user-voice'></i> Instructor Info
                                 </div>
                             </div>
 
-                            <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 16px;">
-                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Teacher Avatar" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--primary-cyan); object-fit: cover;">
+                            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Teacher Avatar" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--primary-cyan); object-fit: cover;">
                                 <div>
-                                    <h3 id="teacherInfoName" style="font-size: 1.1rem; font-weight: 700;">Dr. Rajesh K. Sharma</h3>
-                                    <p id="teacherInfoDesig" style="font-size: 0.82rem; color: var(--text-secondary);">Head of AI & Smart Systems</p>
+                                    <h3 id="teacherInfoName" style="font-size: 1rem; font-weight: 700;">Dr. Rajesh K. Sharma</h3>
+                                    <p id="teacherInfoDesig" style="font-size: 0.78rem; color: var(--text-secondary);">Head of AI & Smart Systems</p>
                                 </div>
                             </div>
 
-                            <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; background: rgba(0,0,0,0.3); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                                <div><strong>Current Course:</strong> <span id="teacherInfoSubj">CS-402: Advanced AI & Smart Systems</span></div>
-                                <div><strong>Office Venue:</strong> <span id="teacherInfoRoom">Room 304 - AI Systems Lab</span></div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; background: rgba(0,0,0,0.3); padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                                <div><strong>Course:</strong> <span id="teacherInfoSubj">CS-402: Advanced AI & Smart Systems</span></div>
+                                <div><strong>Venue:</strong> <span id="teacherInfoRoom">Room 304 - AI Systems Lab</span></div>
                             </div>
                         </div>
 
                         <!-- Real-time Group Chat -->
-                        <div class="glass-panel" style="display: flex; flex-direction: column; height: 380px;">
-                            <div class="panel-header" style="margin-bottom: 10px;">
+                        <div class="glass-panel" style="display: flex; flex-direction: column; height: 340px;">
+                            <div class="panel-header" style="margin-bottom: 8px;">
                                 <div class="panel-title">
-                                    <i class='bx bx-conversation'></i> Room 304 Class Group Chat
+                                    <i class='bx bx-conversation'></i> Room 304 Class Chat
                                 </div>
-                                <span class="badge-pill" style="font-size: 0.7rem; padding: 2px 8px;">Live Connected</span>
                             </div>
 
-                            <!-- Chat Messages Box -->
-                            <div id="chatMessagesBoxStudent" style="flex: 1; overflow-y: auto; padding-right: 6px; margin-bottom: 12px;">
+                            <div id="chatMessagesBoxStudent" style="flex: 1; overflow-y: auto; padding-right: 4px; margin-bottom: 10px;">
                                 <!-- Filled by chat.js -->
                             </div>
 
-                            <!-- Send Message Form -->
-                            <form id="groupChatFormStudent" style="display: flex; gap: 8px;">
-                                <input type="text" id="chatTextInputStudent" placeholder="Type a message to class..." class="form-control" style="flex: 1; border-radius: var(--radius-full); font-size: 0.85rem;" required>
-                                <button type="submit" class="btn-primary" style="padding: 8px 16px; border-radius: var(--radius-full);">
+                            <form id="groupChatFormStudent" style="display: flex; gap: 6px;">
+                                <input type="text" id="chatTextInputStudent" placeholder="Type a message..." class="form-control" style="flex: 1; border-radius: var(--radius-full); font-size: 0.82rem; padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: #fff;" required>
+                                <button type="submit" class="btn-primary" style="padding: 8px 14px; border-radius: var(--radius-full);">
                                     <i class='bx bx-send'></i> Send
                                 </button>
                             </form>
@@ -515,33 +546,47 @@
             </div>
 
         </main>
+
+        <!-- FOOTER WITH INSTAGRAM AND LINKEDIN LINKS -->
+        <footer style="text-align: center; padding: 20px; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.8rem;">
+            <div>Smart AI Classroom System • Designed & Developed by <strong>yrsubm</strong></div>
+            <div style="display: flex; gap: 12px; justify-content: center; margin-top: 8px;">
+                <a href="https://instagram.com/yrsubm" target="_blank" style="color: var(--primary-cyan); text-decoration: none;">
+                    <i class='bx bxl-instagram'></i> Instagram (@yrsubm)
+                </a>
+                <span>•</span>
+                <a href="https://linkedin.com/in/yrsubm" target="_blank" style="color: var(--primary-cyan); text-decoration: none;">
+                    <i class='bx bxl-linkedin'></i> LinkedIn (@yrsubm)
+                </a>
+            </div>
+        </footer>
     </div>
 
     <!-- ========== ADD NEW STUDENT MODAL ========== -->
-    <div id="addStudentModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 3000; display: none; align-items: center; justify-content: center;">
-        <div class="glass-panel" style="width: 420px; border-color: var(--border-glow);">
+    <div id="addStudentModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 4000; display: none; align-items: center; justify-content: center;">
+        <div class="glass-panel" style="width: 380px; border-color: var(--border-glow);">
             <div class="panel-header">
-                <div class="panel-title"><i class='bx bx-user-plus'></i> Add New Student to Room 304</div>
+                <div class="panel-title"><i class='bx bx-user-plus'></i> Add New Student</div>
                 <button class="btn-glass" style="padding: 2px 8px;" onclick="App.closeAddStudentModal()">✕</button>
             </div>
 
             <form id="addStudentForm">
-                <div class="form-group">
-                    <label>Student Full Name:</label>
-                    <input type="text" id="newStudentName" class="form-control" placeholder="e.g. Neha Gupta" required>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label style="font-size: 0.8rem;">Student Full Name:</label>
+                    <input type="text" id="newStudentName" class="form-control" placeholder="e.g. Neha Gupta" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;" required>
                 </div>
-                <div class="form-group">
-                    <label>Enrollment Number:</label>
-                    <input type="text" id="newStudentEnroll" class="form-control" placeholder="e.g. CS2026-11" required>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label style="font-size: 0.8rem;">Enrollment Number:</label>
+                    <input type="text" id="newStudentEnroll" class="form-control" placeholder="e.g. CS2026-11" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;" required>
                 </div>
-                <div class="form-group">
-                    <label>Assigned Desk:</label>
-                    <input type="text" id="newStudentSeat" class="form-control" placeholder="e.g. Desk 6A">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="font-size: 0.8rem;">Assigned Desk:</label>
+                    <input type="text" id="newStudentSeat" class="form-control" placeholder="e.g. Desk 6A" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
                 </div>
 
-                <div style="display: flex; gap: 10px; margin-top: 24px;">
+                <div style="display: flex; gap: 8px;">
                     <button type="submit" class="btn-primary" style="flex: 1; justify-content: center;">
-                        <i class='bx bx-check-circle'></i> Add Student
+                        <i class='bx bx-check-circle'></i> Add
                     </button>
                     <button type="button" class="btn-glass" onclick="App.closeAddStudentModal()">Cancel</button>
                 </div>
@@ -549,46 +594,46 @@
         </div>
     </div>
 
-    <!-- ========== FLOATING SIDE-CORNER QR CODE WIDGET ========== -->
+    <!-- ========== FLOATING CORNER QR CODE WIDGET ========== -->
     <div class="floating-qr-widget">
         <button class="qr-toggle-btn" id="qrToggleBtn" title="Open Dynamic Attendance QR Code">
             <i class='bx bx-qr-scan'></i>
         </button>
 
         <div class="qr-widget-modal" id="qrWidgetModal">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <strong style="font-size: 0.95rem;">Corner Attendance QR</strong>
-                <button class="btn-glass" id="refreshQrBtn" style="padding: 2px 8px; font-size: 0.7rem;">Refresh</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <strong style="font-size: 0.9rem;">Corner Attendance QR</strong>
+                <button class="btn-glass" id="refreshQrBtn" style="padding: 2px 6px; font-size: 0.7rem;">Refresh</button>
             </div>
             
-            <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px;">
-                Scan this QR token with your phone camera or click mobile link to check in.
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 8px;">
+                Scan QR token or click mobile camera check-in link.
             </p>
 
-            <div class="qr-container" style="background: #0B0F19; border-radius: var(--radius-md); padding: 12px; display: flex; justify-content: center; align-items: center;">
-                <canvas id="qrCanvasElem" width="180" height="180" style="border-radius: 8px;"></canvas>
+            <div class="qr-container" style="background: #0B0F19; border-radius: var(--radius-md); padding: 8px; display: flex; justify-content: center; align-items: center;">
+                <canvas id="qrCanvasElem" width="160" height="160" style="border-radius: 6px;"></canvas>
             </div>
 
-            <div style="text-align: center; margin-top: 8px; margin-bottom: 8px;">
-                <a href="pages/scan.html?enroll=CS2026-01" target="_blank" class="btn-glass" style="padding: 4px 12px; font-size: 0.72rem; color: var(--primary-cyan); border-color: rgba(0,242,254,0.3);">
+            <div style="text-align: center; margin-top: 8px; margin-bottom: 6px;">
+                <a href="pages/scan.html?enroll=CS2026-01" target="_blank" class="btn-glass" style="padding: 4px 10px; font-size: 0.7rem; color: var(--primary-cyan); border-color: rgba(0,242,254,0.3);">
                     <i class='bx bx-mobile-alt'></i> Open Mobile Camera Check-In Page
                 </a>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                <span id="qrTokenHash" style="font-family: monospace; font-size: 0.72rem; color: var(--primary-cyan);">Token: GENERATING...</span>
-                <span style="font-size: 0.72rem; color: var(--text-muted);">Auto-refresh: <strong id="qrCountdownText" style="color: var(--warning-amber);">30s</strong></span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                <span id="qrTokenHash" style="font-family: monospace; font-size: 0.7rem; color: var(--primary-cyan);">Token: GENERATING...</span>
+                <span style="font-size: 0.7rem; color: var(--text-muted);">Auto-refresh: <strong id="qrCountdownText" style="color: var(--warning-amber);">30s</strong></span>
             </div>
         </div>
     </div>
 
     <!-- DESK MANUAL CONTROL MODAL -->
-    <div id="deskModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 3000; display: none; align-items: center; justify-content: center;">
-        <div class="glass-panel" style="width: 380px; text-align: center; border-color: var(--border-glow);">
-            <h3 id="deskModalTitle" style="font-size: 1.3rem; font-weight: 800; margin-bottom: 12px;">Desk Control</h3>
-            <p id="deskModalInfo" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6; text-align: left; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px;"></p>
+    <div id="deskModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 4000; display: none; align-items: center; justify-content: center;">
+        <div class="glass-panel" style="width: 360px; text-align: center; border-color: var(--border-glow);">
+            <h3 id="deskModalTitle" style="font-size: 1.2rem; font-weight: 800; margin-bottom: 10px;">Desk Control</h3>
+            <p id="deskModalInfo" style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5; text-align: left; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;"></p>
 
-            <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
                 <button class="btn-primary" onclick="QREngine.processScan(AppState.selectedStudentId); App.closeDeskModal();">
                     <i class='bx bx-check-circle'></i> Mark Present & Start 45-Min Session
                 </button>
