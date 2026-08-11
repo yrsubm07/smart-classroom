@@ -1,60 +1,77 @@
-// Full-Featured Smart Classroom UI Orchestrator & Controller
+// Master Application Controller & UI Orchestrator
 
 const AppState = {
     students: INITIAL_STUDENTS,
-    currentRole: "teacher", // "teacher" | "student"
-    selectedStudentId: "STU-101",
-    activityLogs: [],
     filterStatus: "all",
     searchQuery: ""
 };
 
 const App = {
     init: function() {
-        this.addActivityLog("🚀 Smart AI Classroom Room 304 Initialized.");
+        AuthEngine.init();
         
-        // Start Timers & QR Generator
+        // Initialize Core Engines
         TimerEngine.startMasterTimer();
         QREngine.startAutoRefresh();
 
-        // Populate Select Controls
+        // Populate dropdowns
         this.populateDropdowns();
 
-        // Initial UI Render
-        this.renderAll();
+        // Check login state
+        if (AuthEngine.currentUser) {
+            this.showMainApp();
+        } else {
+            this.showLoginScreen();
+        }
 
-        // Bind Controls & Event Listeners
+        // Setup event bindings
         this.bindEvents();
+    },
+
+    showLoginScreen: function() {
+        document.getElementById('loginGatewayView').style.display = 'flex';
+        document.getElementById('mainAppContainer').style.display = 'none';
+        document.getElementById('userNavbarActions').style.display = 'none';
+    },
+
+    showMainApp: function() {
+        document.getElementById('loginGatewayView').style.display = 'none';
+        document.getElementById('mainAppContainer').style.display = 'block';
+        document.getElementById('userNavbarActions').style.display = 'flex';
+
+        const user = AuthEngine.currentUser;
+        document.getElementById('navUserBadge').innerText = `${user.name} (${user.role.toUpperCase()})`;
+
+        if (user.role === "teacher") {
+            document.getElementById('teacherDashboardView').style.display = 'grid';
+            document.getElementById('studentPortalView').style.display = 'none';
+        } else {
+            document.getElementById('teacherDashboardView').style.display = 'none';
+            document.getElementById('studentPortalView').style.display = 'block';
+            AppState.selectedStudentId = user.id;
+        }
+
+        this.renderAll();
     },
 
     populateDropdowns: function() {
         const scanSelect = document.getElementById('scanStudentSelect');
         const breachSelect = document.getElementById('breachStudentSelect');
-        const studentPortalSelect = document.getElementById('studentPortalSelect');
 
         if (scanSelect && breachSelect) {
             scanSelect.innerHTML = '';
             breachSelect.innerHTML = '';
 
-            if (studentPortalSelect) studentPortalSelect.innerHTML = '';
-
             AppState.students.forEach(s => {
                 const opt1 = document.createElement('option');
                 opt1.value = s.id;
-                opt1.innerText = `${s.name} (${s.rollNo})`;
+                opt1.innerText = `${s.name} (${s.enrollNo})`;
                 scanSelect.appendChild(opt1);
 
                 const opt2 = document.createElement('option');
                 opt2.value = s.id;
-                opt2.innerText = `${s.name} (${s.rollNo})`;
+                opt2.innerText = `${s.name} (${s.enrollNo})`;
                 breachSelect.appendChild(opt2);
-
-                if (studentPortalSelect) {
-                    const opt3 = document.createElement('option');
-                    opt3.value = s.id;
-                    opt3.innerText = `${s.name} (${s.seatNo})`;
-                    studentPortalSelect.appendChild(opt3);
-                }
             });
         }
     },
@@ -66,10 +83,11 @@ const App = {
         this.renderStudentTable();
         this.renderActivityLogs();
         this.renderStudentPortal();
-        this.renderAttendanceGraph();
+        this.renderTeacherProfile();
+        this.renderScheduleTable();
+        ChatEngine.renderMessages();
     },
 
-    // Metrics summary stats
     renderStats: function() {
         const total = AppState.students.length;
         const presentCount = AppState.students.filter(s => s.status === "Present" && s.location.inZone).length;
@@ -84,7 +102,7 @@ const App = {
         document.getElementById('breachAlertCount').innerText = breachCount;
     },
 
-    // 10 Desk Seating Chart
+    // 10 Desk Seating Grid
     renderSeatingGrid: function() {
         const container = document.getElementById('seatingGridContainer');
         if (!container) return;
@@ -117,7 +135,7 @@ const App = {
                 <span class="seat-badge ${badgeClass}">${badgeText}</span>
                 <img src="${student.avatar}" alt="${student.name}" class="seat-avatar" />
                 <div class="student-name">${student.name}</div>
-                <div class="student-roll">${student.seatNo} • ${student.rollNo}</div>
+                <div class="student-roll">${student.seatNo} • ${student.enrollNo}</div>
                 <div class="timer-pill" id="timer-${student.id}">
                     ${student.sessionActive ? TimerEngine.formatTime(student.sessionTimer) : "00:00"}
                 </div>
@@ -127,7 +145,7 @@ const App = {
         });
     },
 
-    // Radar Map Pins
+    // Live Geofence Radar Map Pins
     renderRadarMap: function() {
         const container = document.getElementById('radarMapContainer');
         if (!container) return;
@@ -141,7 +159,6 @@ const App = {
             const pin = document.createElement('div');
             pin.className = `radar-pin ${student.location.inZone ? '' : 'pin-breach'}`;
 
-            // Scale offsets for radar
             const latDiff = (student.location.lat - CLASSROOM_GEOFENCE.centerLat) * 140000;
             const lngDiff = (student.location.lng - CLASSROOM_GEOFENCE.centerLng) * 140000;
 
@@ -150,15 +167,15 @@ const App = {
 
             pin.style.left = `${Math.min(Math.max(x, 15), 205)}px`;
             pin.style.top = `${Math.min(Math.max(y, 15), 205)}px`;
-            pin.title = `${student.name}: ${student.location.inZone ? "Inside Room 304" : "BREACH ALERT!"}`;
+            pin.title = `${student.name}: ${student.location.prediction}`;
 
-            pin.onclick = () => this.showNotification(`GPS Fix: ${student.name} is ${LocationEngine.checkGeofence(student.location.lat, student.location.lng).distanceMeters}m away`, student.location.inZone ? "info" : "warning");
+            pin.onclick = () => this.showNotification(`GPS Fix: ${student.name} - ${student.location.prediction}`, student.location.inZone ? "info" : "warning");
 
             container.appendChild(pin);
         });
     },
 
-    // Student Roster Table with Search & Filter
+    // Student Roster Directory Table
     renderStudentTable: function() {
         const tbody = document.getElementById('studentTableBody');
         if (!tbody) return;
@@ -177,7 +194,7 @@ const App = {
 
         if (AppState.searchQuery) {
             const q = AppState.searchQuery.toLowerCase();
-            filtered = filtered.filter(s => s.name.toLowerCase().includes(q) || s.rollNo.toLowerCase().includes(q) || s.seatNo.toLowerCase().includes(q));
+            filtered = filtered.filter(s => s.name.toLowerCase().includes(q) || s.enrollNo.toLowerCase().includes(q) || s.seatNo.toLowerCase().includes(q));
         }
 
         filtered.forEach(s => {
@@ -198,17 +215,20 @@ const App = {
                         <img src="${s.avatar}" alt="${s.name}">
                         <div>
                             <strong>${s.name}</strong><br>
-                            <small class="student-roll">${s.rollNo}</small>
+                            <small class="student-roll">${s.enrollNo}</small>
                         </div>
                     </div>
                 </td>
                 <td>${s.seatNo}</td>
                 <td>${statusBadge}</td>
                 <td><strong>${s.sessionActive ? TimerEngine.formatTime(s.sessionTimer) : "Inactive"}</strong></td>
-                <td><small>${dist}m • ${s.location.lastPing}</small></td>
+                <td>
+                    <div style="font-size: 0.8rem; font-weight: 600;">${s.location.prediction}</div>
+                    <small style="color: var(--text-muted);">${dist}m • ${s.location.lastPing}</small>
+                </td>
                 <td>
                     <button class="btn-primary" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 6px;" onclick="QREngine.processScan('${s.id}')">
-                        <i class='bx bx-qr-scan'></i> Scan
+                        <i class='bx bx-qr-scan'></i> Check-In
                     </button>
                     <button class="btn-glass" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 6px;" onclick="LocationEngine.pingRealGPS('${s.id}')">
                         <i class='bx bx-map-pin'></i> GPS
@@ -220,25 +240,65 @@ const App = {
         });
     },
 
+    // Teacher Info Profile Card (Student View)
+    renderTeacherProfile: function() {
+        const nameElem = document.getElementById('teacherInfoName');
+        const desigElem = document.getElementById('teacherInfoDesig');
+        const subjElem = document.getElementById('teacherInfoSubj');
+        const roomElem = document.getElementById('teacherInfoRoom');
+
+        if (nameElem) nameElem.innerText = TEACHER_PROFILE.name;
+        if (desigElem) desigElem.innerText = TEACHER_PROFILE.designation;
+        if (subjElem) subjElem.innerText = TEACHER_PROFILE.subject;
+        if (roomElem) roomElem.innerText = `${TEACHER_PROFILE.roomNo} • Hours: ${TEACHER_PROFILE.officeHours}`;
+    },
+
+    // Class Schedule Timetable
+    renderScheduleTable: function() {
+        const tbody = document.getElementById('scheduleTableBody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        CLASS_SCHEDULE.forEach(item => {
+            const tr = document.createElement('tr');
+            let badgeClass = item.status.includes('Active') ? 'present' : (item.status === 'Completed' ? 'absent' : 'warning');
+            
+            tr.innerHTML = `
+                <td><strong>${item.time}</strong></td>
+                <td>${item.subject}</td>
+                <td>${item.room}</td>
+                <td>${item.instructor}</td>
+                <td><span class="seat-badge ${badgeClass}">${item.status}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    },
+
     // Render Student Self-Portal View
     renderStudentPortal: function() {
-        const student = AppState.students.find(s => s.id === AppState.selectedStudentId);
+        const currentStudentId = (AuthEngine.currentUser && AuthEngine.currentUser.role === 'student') 
+            ? AuthEngine.currentUser.id 
+            : AppState.selectedStudentId;
+
+        const student = AppState.students.find(s => s.id === currentStudentId);
         if (!student) return;
 
         const nameElem = document.getElementById('portalStudentName');
-        const rollElem = document.getElementById('portalStudentRoll');
+        const enrollElem = document.getElementById('portalStudentEnroll');
         const avatarElem = document.getElementById('portalStudentAvatar');
         const timerElem = document.getElementById('studentPortalTimer');
         const distElem = document.getElementById('portalDistanceText');
+        const predElem = document.getElementById('portalPredictionText');
         const statusBadgeElem = document.getElementById('portalStatusBadge');
 
         if (nameElem) nameElem.innerText = student.name;
-        if (rollElem) rollElem.innerText = `${student.rollNo} • ${student.seatNo}`;
+        if (enrollElem) enrollElem.innerText = `${student.enrollNo} • ${student.seatNo}`;
         if (avatarElem) avatarElem.src = student.avatar;
         if (timerElem) timerElem.innerText = student.sessionActive ? TimerEngine.formatTime(student.sessionTimer) : "00:00";
 
         const dist = LocationEngine.checkGeofence(student.location.lat, student.location.lng).distanceMeters;
         if (distElem) distElem.innerText = `${dist} Meters`;
+        if (predElem) predElem.innerText = student.location.prediction;
 
         if (statusBadgeElem) {
             if (student.status === "Present") {
@@ -246,41 +306,11 @@ const App = {
                 statusBadgeElem.innerText = student.location.inZone ? "45-MIN SESSION ACTIVE" : "GEOFENCE BREACH ALERT";
             } else {
                 statusBadgeElem.className = "seat-badge absent";
-                statusBadgeElem.innerText = "NOT CHECKED IN";
+                statusBadgeElem.innerText = "NOT CHECKED IN YET";
             }
         }
     },
 
-    // Render CSS 7-Day Attendance Trend Bar Graph
-    renderAttendanceGraph: function() {
-        const graphContainer = document.getElementById('weeklyTrendGraph');
-        if (!graphContainer) return;
-
-        const mockData = [
-            { day: "Mon", rate: 90 },
-            { day: "Tue", rate: 95 },
-            { day: "Wed", rate: 85 },
-            { day: "Thu", rate: 100 },
-            { day: "Fri", rate: 90 },
-            { day: "Sat", rate: 70 },
-            { day: "Today", rate: Math.round((AppState.students.filter(s=>s.status==="Present").length / 10) * 100) }
-        ];
-
-        graphContainer.innerHTML = '';
-        mockData.forEach(d => {
-            const barWrap = document.createElement('div');
-            barWrap.style.cssText = "display:flex; flex-direction:column; align-items:center; flex:1; height:100%; justify-content:flex-end;";
-            
-            barWrap.innerHTML = `
-                <span style="font-size:0.7rem; color:var(--primary-cyan); font-weight:700; margin-bottom:4px;">${d.rate}%</span>
-                <div style="width:100%; height:${d.rate}%; background:var(--accent-glow); border-radius:6px 6px 0 0; transition:height 0.5s;"></div>
-                <span style="font-size:0.72rem; color:var(--text-secondary); margin-top:6px;">${d.day}</span>
-            `;
-            graphContainer.appendChild(barWrap);
-        });
-    },
-
-    // Desk Manual Action Modal
     openDeskModal: function(studentId) {
         AppState.selectedStudentId = studentId;
         const student = AppState.students.find(s => s.id === studentId);
@@ -293,15 +323,14 @@ const App = {
         if (modal && title && info) {
             title.innerText = `${student.seatNo} - ${student.name}`;
             info.innerHTML = `
-                <strong>Roll No:</strong> ${student.rollNo}<br>
-                <strong>Status:</strong> ${student.status}<br>
-                <strong>45-Min Session Timer:</strong> ${student.sessionActive ? TimerEngine.formatTime(student.sessionTimer) : "Inactive"}<br>
-                <strong>GPS Distance to Room 304:</strong> ${LocationEngine.checkGeofence(student.location.lat, student.location.lng).distanceMeters}m
+                <strong>Enrollment No:</strong> ${student.enrollNo}<br>
+                <strong>Attendance Status:</strong> ${student.status}<br>
+                <strong>45-Min Class Timer:</strong> ${student.sessionActive ? TimerEngine.formatTime(student.sessionTimer) : "Inactive"}<br>
+                <strong>Predicted Zone:</strong> ${student.location.prediction}<br>
+                <strong>Distance to Room 304:</strong> ${LocationEngine.checkGeofence(student.location.lat, student.location.lng).distanceMeters}m
             `;
             modal.style.display = 'flex';
         }
-
-        this.renderStudentPortal();
     },
 
     closeDeskModal: function() {
@@ -342,11 +371,11 @@ const App = {
     },
 
     exportCSVReport: function() {
-        let csv = "data:text/csv;charset=utf-8,ID,Name,RollNo,SeatNo,Status,SessionTimerSec,DistanceMeters,InGeofence,LastPingTimestamp\n";
+        let csv = "data:text/csv;charset=utf-8,ID,Name,EnrollNo,SeatNo,Status,TimerSec,DistanceMeters,PredictedZone,LastPingTimestamp\n";
 
         AppState.students.forEach(s => {
             const dist = LocationEngine.checkGeofence(s.location.lat, s.location.lng).distanceMeters;
-            csv += `${s.id},"${s.name}",${s.rollNo},${s.seatNo},${s.status},${s.sessionTimer},${dist},${s.location.inZone},"${s.location.lastPing}"\n`;
+            csv += `${s.id},"${s.name}",${s.enrollNo},${s.seatNo},${s.status},${s.sessionTimer},${dist},"${s.location.prediction}","${s.location.lastPing}"\n`;
         });
 
         const uri = encodeURI(csv);
@@ -357,10 +386,61 @@ const App = {
         link.click();
         document.body.removeChild(link);
 
-        this.showNotification("📥 CSV Attendance & GPS Report Downloaded!", "success");
+        this.showNotification("📥 CSV Report Downloaded Successfully!", "success");
     },
 
     bindEvents: function() {
+        // Login Gateway Tab switching
+        const teacherTab = document.getElementById('teacherTabBtn');
+        const studentTab = document.getElementById('studentTabBtn');
+        const teacherForm = document.getElementById('teacherLoginForm');
+        const studentForm = document.getElementById('studentLoginForm');
+
+        if (teacherTab && studentTab && teacherForm && studentForm) {
+            teacherTab.onclick = () => {
+                teacherTab.classList.add('active');
+                studentTab.classList.remove('active');
+                teacherForm.style.display = 'block';
+                studentForm.style.display = 'none';
+            };
+
+            studentTab.onclick = () => {
+                studentTab.classList.add('active');
+                teacherTab.classList.remove('active');
+                studentForm.style.display = 'block';
+                teacherForm.style.display = 'none';
+            };
+        }
+
+        // Login form submit
+        if (teacherForm) {
+            teacherForm.onsubmit = (e) => {
+                e.preventDefault();
+                const id = document.getElementById('teacherIdInput').value;
+                const pass = document.getElementById('teacherPassInput').value;
+                if (AuthEngine.loginTeacher(id, pass)) {
+                    this.showMainApp();
+                }
+            };
+        }
+
+        if (studentForm) {
+            studentForm.onsubmit = (e) => {
+                e.preventDefault();
+                const enroll = document.getElementById('studentEnrollInput').value;
+                const pass = document.getElementById('studentPassInput').value;
+                if (AuthEngine.loginStudent(enroll, pass)) {
+                    this.showMainApp();
+                }
+            };
+        }
+
+        // Logout
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.onclick = () => AuthEngine.logout();
+        }
+
         // Floating QR toggle
         const toggleBtn = document.getElementById('qrToggleBtn');
         const qrModal = document.getElementById('qrWidgetModal');
@@ -368,40 +448,31 @@ const App = {
             toggleBtn.onclick = () => qrModal.classList.toggle('active');
         }
 
-        // Quick Refresh QR button
+        // Refresh QR
         const refreshQrBtn = document.getElementById('refreshQrBtn');
         if (refreshQrBtn) {
             refreshQrBtn.onclick = () => {
                 QREngine.refreshQRCode();
-                App.showNotification("QR Token refreshed manually!", "info");
+                App.showNotification("QR Token refreshed!", "info");
             };
         }
 
-        // Teacher / Student Role Toggle
-        const roleToggleBtn = document.getElementById('roleToggleBtn');
-        if (roleToggleBtn) {
-            roleToggleBtn.onclick = () => {
-                if (AppState.currentRole === "teacher") {
-                    AppState.currentRole = "student";
-                    document.getElementById('teacherDashboard').style.display = 'none';
-                    document.getElementById('studentPortalSection').style.display = 'block';
-                    roleToggleBtn.innerText = "Switch to Teacher Mode";
-                } else {
-                    AppState.currentRole = "teacher";
-                    document.getElementById('teacherDashboard').style.display = 'grid';
-                    document.getElementById('studentPortalSection').style.display = 'none';
-                    roleToggleBtn.innerText = "Switch to Student View";
+        // Class Bell Alarm Trigger Button
+        const alarmBtn = document.getElementById('triggerClassAlarmBtn');
+        if (alarmBtn) {
+            alarmBtn.onclick = () => TimerEngine.triggerClassBellAlarm();
+        }
+
+        // Group Chat Submit
+        const chatForm = document.getElementById('groupChatForm');
+        if (chatForm) {
+            chatForm.onsubmit = (e) => {
+                e.preventDefault();
+                const input = document.getElementById('chatTextInput');
+                if (input && input.value) {
+                    ChatEngine.sendMessage(input.value);
+                    input.value = '';
                 }
-                this.showNotification(`Switched to ${AppState.currentRole.toUpperCase()} View`, "info");
-            };
-        }
-
-        // Student Portal Selector
-        const portalSelect = document.getElementById('studentPortalSelect');
-        if (portalSelect) {
-            portalSelect.onchange = (e) => {
-                AppState.selectedStudentId = e.target.value;
-                this.renderStudentPortal();
             };
         }
 

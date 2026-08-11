@@ -1,11 +1,10 @@
-// Session & 45-Minute Timer Manager
+// Timer & Class Alarm Manager
 
 const TimerEngine = {
     activeTimers: {},
-    masterTimerSeconds: 2700, // 45 Minutes in seconds
+    masterTimerSeconds: 2700,
     masterInterval: null,
 
-    // Start 45-min timer for student
     startStudentTimer: function(studentId) {
         const student = AppState.students.find(s => s.id === studentId);
         if (!student) return;
@@ -20,7 +19,6 @@ const TimerEngine = {
             if (student.sessionTimer > 0) {
                 student.sessionTimer--;
                 
-                // Auto GPS update every 60 seconds
                 if (student.sessionTimer % 60 === 0) {
                     LocationEngine.updateStudentLocation(studentId);
                 }
@@ -52,8 +50,7 @@ const TimerEngine = {
             }
         }
 
-        // Also update student self-portal timer if visible
-        if (AppState.currentRole === "student" && AppState.selectedStudentId === studentId) {
+        if (AuthEngine.currentUser && AuthEngine.currentUser.role === 'student' && AuthEngine.currentUser.id === studentId) {
             const selfElem = document.getElementById('studentPortalTimer');
             if (selfElem && student) {
                 selfElem.innerText = this.formatTime(student.sessionTimer);
@@ -72,7 +69,7 @@ const TimerEngine = {
             student.sessionActive = false;
             student.sessionTimer = 0;
             
-            App.addActivityLog(`⏱️ 45-Min Session Completed: ${student.name} (${student.rollNo}) auto-checked out.`);
+            App.addActivityLog(`⏱️ 45-Min Session Ended: ${student.name} (${student.enrollNo}) auto-checked out.`);
             App.showNotification(`45-minute class session ended for ${student.name}.`, "info");
             App.renderAll();
         }
@@ -81,7 +78,7 @@ const TimerEngine = {
     startMasterTimer: function() {
         if (this.masterInterval) clearInterval(this.masterInterval);
 
-        this.masterTimerSeconds = CLASSROOM_GEOFENCE.maxClassDurationMinutes * 60; // 2700s
+        this.masterTimerSeconds = CLASSROOM_GEOFENCE.maxClassDurationMinutes * 60;
 
         this.masterInterval = setInterval(() => {
             if (this.masterTimerSeconds > 0) {
@@ -90,9 +87,18 @@ const TimerEngine = {
                 if (elem) elem.innerText = this.formatTime(this.masterTimerSeconds);
             } else {
                 clearInterval(this.masterInterval);
-                App.showNotification("🔔 Master 45-Minute Class Period Ended!", "warning");
-                App.addActivityLog("🔔 Master 45-Minute Class Period Concluded.");
+                this.triggerClassBellAlarm("🔔 45-MINUTE CLASS PERIOD HAS CONCLUDED!");
             }
         }, 1000);
+    },
+
+    // Class Bell / Alarm System Sound & Notification
+    triggerClassBellAlarm: function(customMessage = "🔔 CLASS ALARM TRIGGERED BY INSTRUCTOR!") {
+        QREngine.playBeepSound();
+        setTimeout(() => QREngine.playBeepSound(), 200);
+        setTimeout(() => QREngine.playBeepSound(), 400);
+
+        App.showNotification(customMessage, "warning");
+        App.addActivityLog(`🔊 ALARM SYSTEM: ${customMessage}`);
     }
 };

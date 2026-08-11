@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Smart AI Classroom - Real-time QR Code Attendance, 45-Min Class Timer Session, and Live GPS Geolocation Tracking System.">
-    <title>Smart AI Classroom – Live QR Attendance & GPS Tracker</title>
+    <meta name="description" content="Smart AI Classroom System - Dual Authentication Gateway, Real-time QR Code Attendance, 45-Min Class Session Timers, GPS Geofencing, Teacher/Student Portals & Live Group Chat.">
+    <title>Smart AI Classroom System – Portal Gateway & GPS Tracker</title>
     
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,261 +33,388 @@
             <div class="brand-text">Smart<span>Classroom</span> AI</div>
         </div>
 
-        <div class="header-actions">
-            <button class="btn-glass" id="roleToggleBtn">
-                <i class='bx bx-user-circle'></i> Switch to Student View
-            </button>
-
-            <div class="badge-pill">
-                <div class="pulse-dot"></div>
-                Room 304 • Session Active
+        <div class="header-actions" id="userNavbarActions" style="display: none;">
+            <div class="badge-pill" id="navUserBadge">
+                <i class='bx bx-user-check'></i> Logged In
             </div>
 
             <div class="badge-pill" style="border-color: rgba(245, 158, 11, 0.3); color: var(--warning-amber); background: rgba(245, 158, 11, 0.08);">
-                <i class='bx bx-timer'></i> Class Timer: <span id="globalClassTimer" style="margin-left: 4px; font-weight: 800;">45:00</span>
+                <i class='bx bx-timer'></i> Session Timer: <span id="globalClassTimer" style="margin-left: 4px; font-weight: 800;">45:00</span>
             </div>
 
+            <button class="btn-glass" id="triggerClassAlarmBtn" style="border-color: rgba(245, 158, 11, 0.4); color: var(--warning-amber);">
+                <i class='bx bx-bell'></i> Trigger Class Alarm
+            </button>
+
             <button class="btn-primary" onclick="App.exportCSVReport()">
-                <i class='bx bx-download'></i> Export CSV Report
+                <i class='bx bx-download'></i> Export CSV
+            </button>
+
+            <button class="btn-glass" id="logoutBtn" style="border-color: rgba(244, 63, 94, 0.4); color: var(--danger-rose);">
+                <i class='bx bx-log-out'></i> Logout
             </button>
         </div>
     </nav>
 
-    <!-- ========== MAIN DASHBOARD CONTAINER ========== -->
-    <main class="main-container">
-
-        <!-- Top Metrics Stats Banner -->
-        <section class="stats-banner">
-            <div class="stat-card">
-                <div class="stat-icon cyan"><i class='bx bx-group'></i></div>
-                <div class="stat-info">
-                    <h4>Total Registered</h4>
-                    <div class="stat-value" id="totalStudentsCount">10</div>
+    <!-- ========== 1. DUAL AUTHENTICATION LOGIN GATEWAY ========== -->
+    <div class="login-gateway-view" id="loginGatewayView">
+        <div class="login-card">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div class="brand-icon" style="margin: 0 auto 12px; width: 54px; height: 54px; font-size: 2rem;">
+                    <i class='bx bx-qr-scan'></i>
                 </div>
+                <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 6px;">Smart Classroom Portal</h1>
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">Room 304 • Select Login Role to Access System</p>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-icon green"><i class='bx bx-check-shield'></i></div>
-                <div class="stat-info">
-                    <h4>Present (In Zone)</h4>
-                    <div class="stat-value" id="presentCount">0</div>
-                </div>
+            <!-- Dual Role Tabs -->
+            <div class="login-tabs">
+                <button class="login-tab-btn active" id="teacherTabBtn">
+                    <i class='bx bx-chalkboard'></i> Teacher Login
+                </button>
+                <button class="login-tab-btn" id="studentTabBtn">
+                    <i class='bx bx-user-pin'></i> Student Login
+                </button>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-icon amber"><i class='bx bx-error-circle'></i></div>
-                <div class="stat-info">
-                    <h4>Geofence Breaches</h4>
-                    <div class="stat-value" id="breachAlertCount">0</div>
+            <!-- TEACHER LOGIN FORM -->
+            <form id="teacherLoginForm">
+                <div class="form-group">
+                    <label>Teacher ID / Username:</label>
+                    <input type="text" id="teacherIdInput" class="form-control" placeholder="e.g. T-304 or teacher" value="T-304" required>
+                    <small style="color: var(--text-muted); font-size: 0.72rem; margin-top: 4px; display: block;">Default Teacher ID: <strong>T-304</strong> or <strong>teacher</strong></small>
                 </div>
-            </div>
 
-            <div class="stat-card">
-                <div class="stat-icon purple"><i class='bx bx-pie-chart-alt-2'></i></div>
-                <div class="stat-info">
-                    <h4>Attendance Rate</h4>
-                    <div class="stat-value" id="attendanceRate">0%</div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="teacherPassInput" class="form-control" placeholder="••••••••" value="admin123" required>
                 </div>
-            </div>
-        </section>
 
-        <!-- TEACHER CONTROL DASHBOARD VIEW -->
-        <div class="dashboard-grid" id="teacherDashboard">
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+                    <i class='bx bx-log-in-circle'></i> Login to Teacher Control Dashboard
+                </button>
+            </form>
 
-            <!-- LEFT COLUMN: Interactive Seating Grid & Student Roster -->
-            <div class="left-column" style="display: flex; flex-direction: column; gap: 24px;">
-                
-                <!-- Interactive Classroom Seating Grid (10 Desks) -->
-                <div class="glass-panel">
-                    <div class="panel-header">
-                        <div class="panel-title">
-                            <i class='bx bx-grid-alt'></i> Interactive Room 304 Seating Chart (10 Desks)
-                        </div>
-                        <small style="color: var(--text-muted);">Click any desk for manual override & GPS ping</small>
+            <!-- STUDENT LOGIN FORM (Hidden by default) -->
+            <form id="studentLoginForm" style="display: none;">
+                <div class="form-group">
+                    <label>Student Enrollment No:</label>
+                    <input type="text" id="studentEnrollInput" class="form-control" placeholder="e.g. CS2026-01" value="CS2026-01" required>
+                    <small style="color: var(--text-muted); font-size: 0.72rem; margin-top: 4px; display: block;">Sample Enroll Numbers: <strong>CS2026-01</strong> to <strong>CS2026-10</strong></small>
+                </div>
+
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="studentPassInput" class="form-control" placeholder="••••••••" value="password123" required>
+                </div>
+
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+                    <i class='bx bx-user-check'></i> Login to Student Self-Portal
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========== 2. MAIN APPLICATION CONTAINER (POST-LOGIN) ========== -->
+    <div id="mainAppContainer" style="display: none;">
+        <main class="main-container">
+
+            <!-- Top Summary Metrics Banner -->
+            <section class="stats-banner">
+                <div class="stat-card">
+                    <div class="stat-icon cyan"><i class='bx bx-group'></i></div>
+                    <div class="stat-info">
+                        <h4>Total Registered</h4>
+                        <div class="stat-value" id="totalStudentsCount">10</div>
                     </div>
+                </div>
 
-                    <div class="seating-grid-container" id="seatingGridContainer">
-                        <!-- Rendered dynamically by app.js -->
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class='bx bx-check-shield'></i></div>
+                    <div class="stat-info">
+                        <h4>Present (In Zone)</h4>
+                        <div class="stat-value" id="presentCount">0</div>
                     </div>
                 </div>
 
-                <!-- Complete Student Roster Directory -->
-                <div class="glass-panel">
-                    <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
-                        <div class="panel-title">
-                            <i class='bx bx-list-ul'></i> Student Session & GPS Directory
-                        </div>
-
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <input type="text" id="studentSearchInput" placeholder="Search student name or roll..." class="btn-glass" style="padding: 6px 14px; font-size: 0.82rem; outline: none; border-radius: var(--radius-full); width: 200px;">
-
-                            <button class="btn-primary filter-btn" data-filter="all" style="padding: 6px 12px; font-size: 0.78rem;">All (10)</button>
-                            <button class="btn-glass filter-btn" data-filter="present" style="padding: 6px 12px; font-size: 0.78rem;">Present</button>
-                            <button class="btn-glass filter-btn" data-filter="breach" style="padding: 6px 12px; font-size: 0.78rem;">Out of Zone</button>
-                            <button class="btn-glass filter-btn" data-filter="absent" style="padding: 6px 12px; font-size: 0.78rem;">Absent</button>
-                        </div>
+                <div class="stat-card">
+                    <div class="stat-icon amber"><i class='bx bx-error-circle'></i></div>
+                    <div class="stat-info">
+                        <h4>Geofence Breaches</h4>
+                        <div class="stat-value" id="breachAlertCount">0</div>
                     </div>
+                </div>
 
-                    <table class="roster-table">
-                        <thead>
-                            <tr>
-                                <th>Student Details</th>
-                                <th>Desk</th>
-                                <th>Status</th>
-                                <th>45-Min Timer</th>
-                                <th>GPS Ping</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="studentTableBody">
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i class='bx bx-pie-chart-alt-2'></i></div>
+                    <div class="stat-info">
+                        <h4>Attendance Rate</h4>
+                        <div class="stat-value" id="attendanceRate">0%</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- A. TEACHER DASHBOARD VIEW (Shown when Teacher Logs in) -->
+            <div class="dashboard-grid" id="teacherDashboardView">
+
+                <!-- LEFT COLUMN: Seating Grid & Student Directory -->
+                <div class="left-column" style="display: flex; flex-direction: column; gap: 24px;">
+                    
+                    <!-- Interactive Room 304 Seating Chart (10 Desks) -->
+                    <div class="glass-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <i class='bx bx-grid-alt'></i> Room 304 Seating Chart (10 Desks)
+                            </div>
+                            <small style="color: var(--text-muted);">Click any desk for manual override & GPS prediction</small>
+                        </div>
+
+                        <div class="seating-grid-container" id="seatingGridContainer">
                             <!-- Rendered dynamically by app.js -->
-                        </tbody>
-                    </table>
+                        </div>
+                    </div>
+
+                    <!-- Student Roster Directory Table -->
+                    <div class="glass-panel">
+                        <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
+                            <div class="panel-title">
+                                <i class='bx bx-list-ul'></i> Student Session & Location Directory
+                            </div>
+
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" id="studentSearchInput" placeholder="Search name or enrollment..." class="btn-glass" style="padding: 6px 14px; font-size: 0.82rem; outline: none; border-radius: var(--radius-full); width: 190px;">
+
+                                <button class="btn-primary filter-btn" data-filter="all" style="padding: 6px 12px; font-size: 0.78rem;">All (10)</button>
+                                <button class="btn-glass filter-btn" data-filter="present" style="padding: 6px 12px; font-size: 0.78rem;">Present</button>
+                                <button class="btn-glass filter-btn" data-filter="breach" style="padding: 6px 12px; font-size: 0.78rem;">Out of Zone</button>
+                                <button class="btn-glass filter-btn" data-filter="absent" style="padding: 6px 12px; font-size: 0.78rem;">Absent</button>
+                            </div>
+                        </div>
+
+                        <table class="roster-table">
+                            <thead>
+                                <tr>
+                                    <th>Student Details</th>
+                                    <th>Desk</th>
+                                    <th>Status</th>
+                                    <th>45-Min Timer</th>
+                                    <th>Location Prediction</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentTableBody">
+                                <!-- Rendered dynamically by app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+                <!-- RIGHT COLUMN: Radar Geofence Map, Simulator Controls, Audit Logs -->
+                <div class="right-column" style="display: flex; flex-direction: column; gap: 24px;">
+
+                    <!-- Live Classroom Geofence Radar Map -->
+                    <div class="glass-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <i class='bx bx-radar'></i> Live Geofence Radar Map
+                            </div>
+                            <span class="badge-pill" style="font-size: 0.75rem; padding: 2px 10px;">Radius: 30m</span>
+                        </div>
+
+                        <div class="radar-map-container" id="radarMapContainer">
+                            <div class="radar-circle radar-circle-1"></div>
+                            <div class="radar-circle radar-circle-2"></div>
+                            <div class="radar-circle radar-circle-3"></div>
+                            <div class="radar-sweep"></div>
+                        </div>
+
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); text-align: center;">
+                            <i class='bx bx-info-circle' style="color: var(--primary-cyan);"></i> Verifies student GPS location is within 30m of Room 304 center.
+                        </div>
+                    </div>
+
+                    <!-- Simulator Controls -->
+                    <div class="glass-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <i class='bx bx-slider-alt'></i> QR & Geofence Simulator
+                            </div>
+                        </div>
+
+                        <!-- Simulate QR Scan -->
+                        <form id="simulateScanForm" style="margin-bottom: 20px;">
+                            <label style="font-size: 0.82rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">
+                                Simulate Student Scanning Corner QR Code:
+                            </label>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="scanStudentSelect" class="btn-glass" style="flex: 1; border-radius: var(--radius-sm); outline: none; font-size: 0.85rem;">
+                                    <!-- Filled by JS -->
+                                </select>
+                                <button type="submit" class="btn-primary" style="border-radius: var(--radius-sm); font-size: 0.85rem; padding: 8px 16px;">
+                                    <i class='bx bx-qr-scan'></i> Check-In
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Simulate Geofence Breach -->
+                        <form id="simulateBreachForm">
+                            <label style="font-size: 0.82rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">
+                                Simulate Student Leaving Room (Geofence Breach):
+                            </label>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="breachStudentSelect" class="btn-glass" style="flex: 1; border-radius: var(--radius-sm); outline: none; font-size: 0.85rem;">
+                                    <!-- Filled by JS -->
+                                </select>
+                                <button type="submit" class="btn-glass" style="border-color: rgba(245, 158, 11, 0.4); color: var(--warning-amber); border-radius: var(--radius-sm); font-size: 0.85rem; padding: 8px 16px;">
+                                    <i class='bx bx-walk'></i> Breach Geofence
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Real-Time Activity Logs -->
+                    <div class="glass-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <i class='bx bx-history'></i> Audit Activity Logs
+                            </div>
+                        </div>
+
+                        <div class="activity-logs-box" id="activityLogsContainer">
+                            <!-- Filled dynamically -->
+                        </div>
+                    </div>
+
                 </div>
 
             </div>
 
-            <!-- RIGHT COLUMN: Radar Geofence Map, Simulation Controls, Weekly Trends -->
-            <div class="right-column" style="display: flex; flex-direction: column; gap: 24px;">
+            <!-- B. STUDENT PORTAL VIEW (Shown when Student Logs in) -->
+            <div id="studentPortalView" style="display: none;">
+                <div class="dashboard-grid">
+                    
+                    <!-- LEFT COLUMN: Student Profile Card & Class Timetable -->
+                    <div class="left-column" style="display: flex; flex-direction: column; gap: 24px;">
+                        
+                        <!-- Student Self Profile & Active Session Timer Card -->
+                        <div class="glass-panel" style="text-align: center; padding: 32px 24px;">
+                            <img id="portalStudentAvatar" src="" alt="Student Avatar" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary-cyan); margin-bottom: 12px; object-fit: cover;">
+                            <h2 id="portalStudentName" style="font-size: 1.5rem; font-weight: 800;">Aarav Sharma</h2>
+                            <p id="portalStudentEnroll" style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 16px;">CS2026-01 • Desk 1A</p>
 
-                <!-- Live Classroom Geofence Radar Map -->
-                <div class="glass-panel">
-                    <div class="panel-header">
-                        <div class="panel-title">
-                            <i class='bx bx-radar'></i> Live Geofence Radar Map
+                            <div id="portalStatusBadge" class="seat-badge absent" style="font-size: 0.88rem; padding: 6px 18px; margin-bottom: 20px; display: inline-block;">NOT CHECKED IN YET</div>
+
+                            <!-- 45-Min Session Countdown -->
+                            <div style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px; margin-bottom: 20px;">
+                                <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Active Class Session Countdown</div>
+                                <div id="studentPortalTimer" style="font-size: 2.8rem; font-weight: 800; color: var(--primary-cyan); line-height: 1.2;">45:00</div>
+                                <small style="color: var(--text-secondary);">Session auto-expires after 45 minutes</small>
+                            </div>
+
+                            <!-- Location & Distance Card -->
+                            <div style="display: flex; justify-content: space-around; background: rgba(255,255,255,0.02); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 20px;">
+                                <div>
+                                    <small style="color: var(--text-muted); display: block;">GPS Distance to Room 304</small>
+                                    <strong id="portalDistanceText" style="font-size: 1.1rem; color: var(--success-green);">12 Meters</strong>
+                                </div>
+                                <div>
+                                    <small style="color: var(--text-muted); display: block;">Predicted Location Zone</small>
+                                    <strong id="portalPredictionText" style="font-size: 1.1rem; color: var(--primary-cyan);">Inside Room 304</strong>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 12px; justify-content: center;">
+                                <button class="btn-primary" style="flex: 1; justify-content: center;" onclick="QREngine.processScan(AuthEngine.currentUser.id)">
+                                    <i class='bx bx-qr-scan'></i> Check In via QR Code
+                                </button>
+                                <button class="btn-glass" style="flex: 1; justify-content: center;" onclick="LocationEngine.pingRealGPS(AuthEngine.currentUser.id)">
+                                    <i class='bx bx-map-pin'></i> Ping Device Live GPS
+                                </button>
+                            </div>
                         </div>
-                        <span class="badge-pill" style="font-size: 0.75rem; padding: 2px 10px;">Radius: 30m</span>
+
+                        <!-- Course Timetable Schedule -->
+                        <div class="glass-panel">
+                            <div class="panel-header">
+                                <div class="panel-title">
+                                    <i class='bx bx-calendar-event'></i> Today's Class Timetable & Schedule
+                                </div>
+                            </div>
+
+                            <table class="roster-table">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Subject</th>
+                                        <th>Venue</th>
+                                        <th>Instructor</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="scheduleTableBody">
+                                    <!-- Filled dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+
                     </div>
 
-                    <div class="radar-map-container" id="radarMapContainer">
-                        <div class="radar-circle radar-circle-1"></div>
-                        <div class="radar-circle radar-circle-2"></div>
-                        <div class="radar-circle radar-circle-3"></div>
-                        <div class="radar-sweep"></div>
+                    <!-- RIGHT COLUMN: Assigned Teacher Info & Real-Time Group Chat -->
+                    <div class="right-column" style="display: flex; flex-direction: column; gap: 24px;">
+                        
+                        <!-- Teacher Info Card -->
+                        <div class="glass-panel">
+                            <div class="panel-header">
+                                <div class="panel-title">
+                                    <i class='bx bx-user-voice'></i> Course Instructor Information
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 16px;">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Teacher Avatar" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--primary-cyan); object-fit: cover;">
+                                <div>
+                                    <h3 id="teacherInfoName" style="font-size: 1.1rem; font-weight: 700;">Dr. Rajesh K. Sharma</h3>
+                                    <p id="teacherInfoDesig" style="font-size: 0.82rem; color: var(--text-secondary);">Head of AI & Smart Systems</p>
+                                </div>
+                            </div>
+
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; background: rgba(0,0,0,0.3); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                                <div><strong>Current Course:</strong> <span id="teacherInfoSubj">CS-402: Advanced AI & Smart Systems</span></div>
+                                <div><strong>Office Venue:</strong> <span id="teacherInfoRoom">Room 304 - AI Systems Lab</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Real-time Group Chat -->
+                        <div class="glass-panel" style="display: flex; flex-direction: column; height: 380px;">
+                            <div class="panel-header" style="margin-bottom: 10px;">
+                                <div class="panel-title">
+                                    <i class='bx bx-conversation'></i> Room 304 Class Group Chat
+                                </div>
+                                <span class="badge-pill" style="font-size: 0.7rem; padding: 2px 8px;">Live Connected</span>
+                            </div>
+
+                            <!-- Chat Messages Box -->
+                            <div id="chatMessagesBox" style="flex: 1; overflow-y: auto; padding-right: 6px; margin-bottom: 12px;">
+                                <!-- Filled by chat.js -->
+                            </div>
+
+                            <!-- Send Message Form -->
+                            <form id="groupChatForm" style="display: flex; gap: 8px;">
+                                <input type="text" id="chatTextInput" placeholder="Type a message to class..." class="form-control" style="flex: 1; border-radius: var(--radius-full); font-size: 0.85rem;" required>
+                                <button type="submit" class="btn-primary" style="padding: 8px 16px; border-radius: var(--radius-full);">
+                                    <i class='bx bx-send'></i> Send
+                                </button>
+                            </form>
+                        </div>
+
                     </div>
 
-                    <div style="font-size: 0.8rem; color: var(--text-secondary); text-align: center;">
-                        <i class='bx bx-info-circle' style="color: var(--primary-cyan);"></i> Verifies student GPS location is within 30m of Room 304 center.
-                    </div>
                 </div>
-
-                <!-- Simulation & Trial Controls -->
-                <div class="glass-panel">
-                    <div class="panel-header">
-                        <div class="panel-title">
-                            <i class='bx bx-slider-alt'></i> QR & Geofence Trial Simulator
-                        </div>
-                    </div>
-
-                    <!-- Simulate QR Scan -->
-                    <form id="simulateScanForm" style="margin-bottom: 20px;">
-                        <label style="font-size: 0.82rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">
-                            Simulate Student Scanning Side-Corner QR Code:
-                        </label>
-                        <div style="display: flex; gap: 10px;">
-                            <select id="scanStudentSelect" class="btn-glass" style="flex: 1; border-radius: var(--radius-sm); outline: none; font-size: 0.85rem;">
-                                <!-- Filled by JS -->
-                            </select>
-                            <button type="submit" class="btn-primary" style="border-radius: var(--radius-sm); font-size: 0.85rem; padding: 8px 16px;">
-                                <i class='bx bx-qr-scan'></i> Scan QR
-                            </button>
-                        </div>
-                    </form>
-
-                    <!-- Simulate Geofence Breach -->
-                    <form id="simulateBreachForm">
-                        <label style="font-size: 0.82rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">
-                            Simulate Student Leaving Room (Geofence Breach):
-                        </label>
-                        <div style="display: flex; gap: 10px;">
-                            <select id="breachStudentSelect" class="btn-glass" style="flex: 1; border-radius: var(--radius-sm); outline: none; font-size: 0.85rem;">
-                                <!-- Filled by JS -->
-                            </select>
-                            <button type="submit" class="btn-glass" style="border-color: rgba(245, 158, 11, 0.4); color: var(--warning-amber); border-radius: var(--radius-sm); font-size: 0.85rem; padding: 8px 16px;">
-                                <i class='bx bx-walk'></i> Breach Geofence
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- 7-Day Attendance Trend Chart -->
-                <div class="glass-panel">
-                    <div class="panel-header">
-                        <div class="panel-title">
-                            <i class='bx bx-bar-chart-alt-2'></i> 7-Day Attendance Trend
-                        </div>
-                    </div>
-
-                    <div id="weeklyTrendGraph" style="height: 140px; display: flex; gap: 12px; align-items: flex-end; padding-top: 10px;">
-                        <!-- Filled dynamically by app.js -->
-                    </div>
-                </div>
-
-                <!-- Real-time Activity Logs -->
-                <div class="glass-panel">
-                    <div class="panel-header">
-                        <div class="panel-title">
-                            <i class='bx bx-history'></i> Real-Time Activity Audit Logs
-                        </div>
-                    </div>
-
-                    <div class="activity-logs-box" id="activityLogsContainer">
-                        <!-- Filled dynamically -->
-                    </div>
-                </div>
-
             </div>
 
-        </div>
-
-        <!-- STUDENT SELF-PORTAL APP VIEW (Hidden by Default) -->
-        <div id="studentPortalSection" style="display: none; max-width: 600px; margin: 0 auto;">
-            <div class="glass-panel" style="text-align: center; padding: 36px 24px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <label style="font-size: 0.85rem; color: var(--text-secondary);">Select Student Identity:</label>
-                    <select id="studentPortalSelect" class="btn-glass" style="border-radius: var(--radius-full); font-size: 0.85rem; padding: 6px 14px;">
-                        <!-- Filled by JS -->
-                    </select>
-                </div>
-
-                <img id="portalStudentAvatar" src="" alt="Student Avatar" style="width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--primary-cyan); margin-bottom: 12px; object-fit: cover;">
-
-                <h2 id="portalStudentName" style="font-size: 1.6rem; font-weight: 800;">Aarav Sharma</h2>
-                <p id="portalStudentRoll" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px;">CS2026-01 • Desk 1A</p>
-
-                <div id="portalStatusBadge" class="seat-badge absent" style="font-size: 0.9rem; padding: 6px 18px; margin-bottom: 24px; display: inline-block;">NOT CHECKED IN</div>
-
-                <!-- Live Timer Card -->
-                <div style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin-bottom: 24px;">
-                    <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Active Class Session Timer</div>
-                    <div id="studentPortalTimer" style="font-size: 3rem; font-weight: 800; color: var(--primary-cyan); line-height: 1.2;">45:00</div>
-                    <small style="color: var(--text-secondary);">Session automatically expires after 45 minutes</small>
-                </div>
-
-                <!-- Distance to Classroom -->
-                <div style="display: flex; justify-content: space-around; background: rgba(255,255,255,0.02); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 24px;">
-                    <div>
-                        <small style="color: var(--text-muted); display: block;">Distance to Room 304</small>
-                        <strong id="portalDistanceText" style="font-size: 1.2rem; color: var(--success-green);">12 Meters</strong>
-                    </div>
-                    <div>
-                        <small style="color: var(--text-muted); display: block;">Geofence Radius</small>
-                        <strong style="font-size: 1.2rem; color: var(--primary-cyan);">30 Meters</strong>
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: 12px; justify-content: center;">
-                    <button class="btn-primary" style="flex: 1; justify-content: center;" onclick="QREngine.processScan(AppState.selectedStudentId)">
-                        <i class='bx bx-qr-scan'></i> Check In via QR
-                    </button>
-                    <button class="btn-glass" style="flex: 1; justify-content: center;" onclick="LocationEngine.pingRealGPS(AppState.selectedStudentId)">
-                        <i class='bx bx-map-pin'></i> Ping Live GPS
-                    </button>
-                </div>
-            </div>
-        </div>
-
-    </main>
+        </main>
+    </div>
 
     <!-- ========== FLOATING SIDE-CORNER QR CODE WIDGET ========== -->
     <div class="floating-qr-widget">
@@ -308,7 +435,6 @@
             </p>
 
             <div class="qr-container" style="background: #0B0F19; border-radius: var(--radius-md); padding: 12px; display: flex; justify-content: center; align-items: center;">
-                <!-- High-contrast Standalone Canvas QR Renderer (100% Reliable, Zero Network Dependency) -->
                 <canvas id="qrCanvasElem" width="180" height="180" style="border-radius: 8px;"></canvas>
             </div>
 
@@ -344,6 +470,8 @@
 
     <!-- JavaScript Scripts -->
     <script src="data/students.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/chat.js"></script>
     <script src="js/location.js"></script>
     <script src="js/timer.js"></script>
     <script src="js/qrcode.js"></script>

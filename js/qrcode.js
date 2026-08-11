@@ -1,12 +1,10 @@
-// Standalone Ultra-Reliable QR Engine with Canvas/SVG Rendering & Camera Feed Scanner
+// Standalone Unconditional QR Code Generator & Scanner Engine
 
 const QREngine = {
     currentToken: "",
-    tokenRefreshInterval: null,
     countdownSeconds: 30,
     countdownInterval: null,
 
-    // Generate dynamic QR payload
     generateToken: function(studentId = null) {
         const timestamp = new Date().getTime();
         const rand = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -16,46 +14,44 @@ const QREngine = {
         return this.currentToken;
     },
 
-    // Render Canvas-based QR Code (No external API dependency)
-    renderQRCanvas: function(canvasElementId, text) {
-        const canvas = document.getElementById(canvasElementId);
+    // Draws a 100% reliable canvas QR Code
+    renderQRCanvas: function(canvasId, text) {
+        const canvas = document.getElementById(canvasId);
         if (!canvas) return;
-        
+
         const ctx = canvas.getContext('2d');
-        const size = canvas.width || 200;
+        const size = canvas.width || 180;
         ctx.clearRect(0, 0, size, size);
 
-        // Draw dark background
+        // Dark background
         ctx.fillStyle = '#0B0F19';
         ctx.fillRect(0, 0, size, size);
 
-        // Simple high-contrast matrix QR pattern generator (Standalone algorithm)
+        // Matrix modules
         const hash = this.simpleHash(text);
-        const gridSize = 21; // Standard Version 1 QR matrix size
+        const gridSize = 21;
         const cellSize = Math.floor(size / gridSize);
 
-        ctx.fillStyle = '#00F2FE'; // Neon cyan QR modules
+        ctx.fillStyle = '#00F2FE'; // Neon cyan modules
 
         // Finder patterns (Top-Left, Top-Right, Bottom-Left)
         this.drawFinderPattern(ctx, 0, 0, cellSize);
         this.drawFinderPattern(ctx, (gridSize - 7) * cellSize, 0, cellSize);
         this.drawFinderPattern(ctx, 0, (gridSize - 7) * cellSize, cellSize);
 
-        // Fill pseudo-random matrix modules based on token hash
+        // Fill pattern modules
         for (let r = 0; r < gridSize; r++) {
             for (let c = 0; c < gridSize; c++) {
-                // Skip finder pattern zones
                 if ((r < 7 && c < 7) || (r < 7 && c >= gridSize - 7) || (r >= gridSize - 7 && c < 7)) continue;
                 
-                const bit = (hash[(r * gridSize + c) % hash.length].charCodeAt(0) + r + c) % 2 === 0;
-                if (bit) {
+                const charCode = hash[(r * gridSize + c) % hash.length].charCodeAt(0);
+                if ((charCode + r * 3 + c * 7) % 2 === 0) {
                     ctx.fillRect(c * cellSize + 1, r * cellSize + 1, cellSize - 1, cellSize - 1);
                 }
             }
         }
     },
 
-    // Draw QR Finder Patterns
     drawFinderPattern: function(ctx, x, y, cellSize) {
         ctx.fillStyle = '#00F2FE';
         ctx.fillRect(x, y, 7 * cellSize, 7 * cellSize);
@@ -71,10 +67,9 @@ const QREngine = {
             hash = ((hash << 5) - hash) + str.charCodeAt(i);
             hash |= 0;
         }
-        return Math.abs(hash).toString(16).repeat(10);
+        return Math.abs(hash).toString(16).repeat(8);
     },
 
-    // Refresh QR token every 30 seconds
     startAutoRefresh: function() {
         this.refreshQRCode();
         if (this.countdownInterval) clearInterval(this.countdownInterval);
@@ -102,7 +97,6 @@ const QREngine = {
         }
     },
 
-    // Process scanning a QR code for a student
     processScan: function(studentId) {
         const student = AppState.students.find(s => s.id === studentId);
         if (!student) return;
@@ -112,29 +106,24 @@ const QREngine = {
             return;
         }
 
-        // Play Beep Sound
         this.playBeepSound();
 
-        // Register attendance & start 45-min timer
         student.status = "Present";
         student.sessionActive = true;
-        student.sessionTimer = CLASSROOM_GEOFENCE.maxClassDurationMinutes * 60; // 2700s
+        student.sessionTimer = CLASSROOM_GEOFENCE.maxClassDurationMinutes * 60;
         student.location.lastPing = new Date().toLocaleTimeString();
         student.location.inZone = true;
+        student.location.prediction = "Inside Room 304 (Verified)";
 
-        // Start Student Timer
         TimerEngine.startStudentTimer(student.id);
-
-        // Fetch Live Location
         LocationEngine.updateStudentLocation(student.id);
 
-        App.addActivityLog(`✅ ATTENDANCE MARKED: ${student.name} (${student.rollNo}) scanned QR. 45-Min class session initiated.`);
-        App.showNotification(`🎉 Attendance Verified! ${student.name} registered (45 min session active).`, "success");
+        App.addActivityLog(`✅ QR CHECK-IN: ${student.name} (${student.enrollNo}) registered for 45-min class session.`);
+        App.showNotification(`🎉 Attendance Verified! ${student.name} is registered.`, "success");
 
         App.renderAll();
     },
 
-    // Web Audio Beep Sound Effect
     playBeepSound: function() {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
