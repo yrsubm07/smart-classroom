@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Smart AI Classroom System - Dual Authentication Gateway, Scannable Phone QR Attendance, 45-Min Class Session Timers, GPS Geofencing, Teacher Annoy Controls & Live Group Chat.">
+    <meta name="description" content="Smart AI Classroom System - Dual Auth Gateway, Scannable Phone QR Attendance, 45-Min Timers, Live Geofencing & Dynamic Roster Management.">
     <title>Smart AI Classroom System – Portal Gateway & GPS Tracker</title>
     
     <!-- Fonts & Icons -->
@@ -26,7 +26,7 @@
     <!-- Toast Notifications Container -->
     <div id="toast-container"></div>
 
-    <!-- ========== NAVIGATION BAR ========== -->
+    <!-- ========== NAVIGATION BAR WITH 3-DOT KEBAB SYSTEM ========== -->
     <nav class="navbar">
         <div class="brand">
             <div class="brand-icon"><i class='bx bx-qr-scan'></i></div>
@@ -34,29 +34,52 @@
         </div>
 
         <div class="header-actions" id="userNavbarActions" style="display: none;">
-            <div class="badge-pill" id="navUserBadge">
-                <i class='bx bx-user-check'></i> Logged In
+            <!-- Live Classroom Status Pill -->
+            <div class="badge-pill">
+                <div class="pulse-dot"></div>
+                Room 304 • Live
             </div>
 
-            <div class="badge-pill" style="border-color: rgba(245, 158, 11, 0.3); color: var(--warning-amber); background: rgba(245, 158, 11, 0.08);">
-                <i class='bx bx-timer'></i> Session Timer: <span id="globalClassTimer" style="margin-left: 4px; font-weight: 800;">45:00</span>
+            <!-- Sleek 3-Dot Kebab Menu System -->
+            <div class="kebab-menu-container">
+                <button class="kebab-btn" id="kebabMenuBtn" title="Classroom Quick Actions Menu">
+                    <i class='bx bx-dots-vertical-rounded'></i>
+                </button>
+
+                <!-- Kebab Dropdown Menu -->
+                <div class="kebab-dropdown" id="kebabDropdownMenu">
+                    <div style="padding: 8px 12px; border-bottom: 1px solid var(--border-color); font-size: 0.8rem; color: var(--primary-cyan); font-weight: 700;" id="kebabNavUserText">
+                        Dr. Rajesh K. Sharma (TEACHER)
+                    </div>
+
+                    <div class="kebab-item" style="cursor: default;">
+                        <i class='bx bx-timer' style="color: var(--warning-amber);"></i>
+                        <span>Session Timer: <strong id="globalClassTimer" style="color: var(--warning-amber);">45:00</strong></span>
+                    </div>
+
+                    <button class="kebab-item" id="kebabAlarmBtn">
+                        <i class='bx bx-bell' style="color: var(--warning-amber);"></i>
+                        <span>Trigger Class Alarm</span>
+                    </button>
+
+                    <button class="kebab-item" onclick="App.exportCSVReport(); document.getElementById('kebabDropdownMenu').classList.remove('active');">
+                        <i class='bx bx-download' style="color: var(--success-green);"></i>
+                        <span>Export Attendance CSV</span>
+                    </button>
+
+                    <a href="pages/activities.html" class="kebab-item">
+                        <i class='bx bx-joystick' style="color: #A855F7;"></i>
+                        <span>Free-Time Quiz Hub</span>
+                    </a>
+
+                    <div style="border-top: 1px solid var(--border-color); margin-top: 4px; padding-top: 4px;">
+                        <button class="kebab-item" id="kebabLogoutBtn" style="color: var(--danger-rose);">
+                            <i class='bx bx-log-out'></i>
+                            <span>Logout</span>
+                        </button>
+                    </div>
+                </div>
             </div>
-
-            <a href="pages/activities.html" class="btn-glass" style="border-color: rgba(127,0,255,0.4); color: #A855F7;">
-                <i class='bx bx-joystick'></i> Free-Time Activity Hub
-            </a>
-
-            <button class="btn-glass" id="triggerClassAlarmBtn" style="border-color: rgba(245, 158, 11, 0.4); color: var(--warning-amber);">
-                <i class='bx bx-bell'></i> Trigger Alarm
-            </button>
-
-            <button class="btn-primary" onclick="App.exportCSVReport()">
-                <i class='bx bx-download'></i> Export CSV
-            </button>
-
-            <button class="btn-glass" id="logoutBtn" style="border-color: rgba(244, 63, 94, 0.4); color: var(--danger-rose);">
-                <i class='bx bx-log-out'></i> Logout
-            </button>
         </div>
     </nav>
 
@@ -164,13 +187,16 @@
                 <!-- LEFT COLUMN: Seating Grid & Student Directory -->
                 <div class="left-column" style="display: flex; flex-direction: column; gap: 24px;">
                     
-                    <!-- Interactive Room 304 Seating Chart (10 Desks) -->
+                    <!-- Interactive Room 304 Seating Chart -->
                     <div class="glass-panel">
                         <div class="panel-header">
                             <div class="panel-title">
-                                <i class='bx bx-grid-alt'></i> Room 304 Seating Chart (10 Desks)
+                                <i class='bx bx-grid-alt'></i> Room 304 Seating Chart
                             </div>
-                            <small style="color: var(--text-muted);">Click desk to view 45-min live session & GPS status</small>
+                            <!-- Live Teacher QR Scan Analytics Badge -->
+                            <span class="badge-pill" id="qrScanAnalyticsText" style="border-color: rgba(0, 242, 254, 0.4); color: var(--primary-cyan);">
+                                Registered via QR: 0 / 10 Students
+                            </span>
                         </div>
 
                         <div class="seating-grid-container" id="seatingGridContainer">
@@ -200,20 +226,24 @@
                         </div>
                     </div>
 
-                    <!-- Student Roster Directory Table -->
+                    <!-- Student Roster Directory Table with Add/Remove Feature -->
                     <div class="glass-panel">
                         <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
                             <div class="panel-title">
-                                <i class='bx bx-list-ul'></i> Student Session & Location Directory
+                                <i class='bx bx-list-ul'></i> Student Directory Management
                             </div>
 
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <input type="text" id="studentSearchInput" placeholder="Search name or enrollment..." class="btn-glass" style="padding: 6px 14px; font-size: 0.82rem; outline: none; border-radius: var(--radius-full); width: 190px;">
+                                <button class="btn-primary" style="padding: 6px 14px; font-size: 0.8rem;" onclick="App.openAddStudentModal()">
+                                    <i class='bx bx-user-plus'></i> + Add Student
+                                </button>
 
-                                <button class="btn-primary filter-btn" data-filter="all" style="padding: 6px 12px; font-size: 0.78rem;">All (10)</button>
-                                <button class="btn-glass filter-btn" data-filter="present" style="padding: 6px 12px; font-size: 0.78rem;">Present</button>
-                                <button class="btn-glass filter-btn" data-filter="breach" style="padding: 6px 12px; font-size: 0.78rem;">Out of Zone</button>
-                                <button class="btn-glass filter-btn" data-filter="absent" style="padding: 6px 12px; font-size: 0.78rem;">Absent</button>
+                                <input type="text" id="studentSearchInput" placeholder="Search name or enrollment..." class="btn-glass" style="padding: 6px 14px; font-size: 0.82rem; outline: none; border-radius: var(--radius-full); width: 170px;">
+
+                                <button class="btn-primary filter-btn" data-filter="all" style="padding: 6px 10px; font-size: 0.78rem;">All</button>
+                                <button class="btn-glass filter-btn" data-filter="present" style="padding: 6px 10px; font-size: 0.78rem;">Present</button>
+                                <button class="btn-glass filter-btn" data-filter="breach" style="padding: 6px 10px; font-size: 0.78rem;">Breach</button>
+                                <button class="btn-glass filter-btn" data-filter="absent" style="padding: 6px 10px; font-size: 0.78rem;">Absent</button>
                             </div>
                         </div>
 
@@ -487,14 +517,44 @@
         </main>
     </div>
 
+    <!-- ========== ADD NEW STUDENT MODAL ========== -->
+    <div id="addStudentModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 3000; display: none; align-items: center; justify-content: center;">
+        <div class="glass-panel" style="width: 420px; border-color: var(--border-glow);">
+            <div class="panel-header">
+                <div class="panel-title"><i class='bx bx-user-plus'></i> Add New Student to Room 304</div>
+                <button class="btn-glass" style="padding: 2px 8px;" onclick="App.closeAddStudentModal()">✕</button>
+            </div>
+
+            <form id="addStudentForm">
+                <div class="form-group">
+                    <label>Student Full Name:</label>
+                    <input type="text" id="newStudentName" class="form-control" placeholder="e.g. Neha Gupta" required>
+                </div>
+                <div class="form-group">
+                    <label>Enrollment Number:</label>
+                    <input type="text" id="newStudentEnroll" class="form-control" placeholder="e.g. CS2026-11" required>
+                </div>
+                <div class="form-group">
+                    <label>Assigned Desk:</label>
+                    <input type="text" id="newStudentSeat" class="form-control" placeholder="e.g. Desk 6A">
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 24px;">
+                    <button type="submit" class="btn-primary" style="flex: 1; justify-content: center;">
+                        <i class='bx bx-check-circle'></i> Add Student
+                    </button>
+                    <button type="button" class="btn-glass" onclick="App.closeAddStudentModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- ========== FLOATING SIDE-CORNER QR CODE WIDGET ========== -->
     <div class="floating-qr-widget">
-        <!-- Floating Toggle Button -->
         <button class="qr-toggle-btn" id="qrToggleBtn" title="Open Dynamic Attendance QR Code">
             <i class='bx bx-qr-scan'></i>
         </button>
 
-        <!-- Side Corner QR Modal -->
         <div class="qr-widget-modal" id="qrWidgetModal">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                 <strong style="font-size: 0.95rem;">Corner Attendance QR</strong>

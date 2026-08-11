@@ -1,4 +1,4 @@
-// Pre-loaded 10 Students, Teacher Profiles, Class Schedules, Group Chat & Leaderboard Data
+// Pre-loaded Students, Teacher Profiles, Class Schedules, Dynamic Quiz & Helper Store
 
 const TEACHER_PROFILE = {
     id: "T-304",
@@ -18,12 +18,26 @@ const CLASS_SCHEDULE = [
     { time: "01:30 PM - 02:15 PM", subject: "Machine Learning Lab", room: "Lab 4", instructor: "Dr. Rajesh K. Sharma", status: "Upcoming" }
 ];
 
-const ASSIGNMENTS = [
-    { id: "HW-01", title: "Haversine GPS Formula Implementation", subject: "CS-402", dueDate: "Tomorrow, 05:00 PM", status: "Pending" },
-    { id: "HW-02", title: "Dynamic QR Token Cryptographic Hashing", subject: "CS-402", dueDate: "Friday, 11:59 PM", status: "Submitted" }
+// Pre-loaded Quiz Questions (Can be customized by teacher)
+const DEFAULT_TEACHER_QUIZ = [
+    {
+        q: "1. Which formula calculates spherical distance between GPS coordinates in geofencing?",
+        options: ["Haversine Formula", "Pythagoras Theorem", "Euclidean Distance", "Manhattan Distance"],
+        ans: 0
+    },
+    {
+        q: "2. What is the standard duration of the class session timer in Room 304?",
+        options: ["30 Minutes", "45 Minutes", "60 Minutes", "90 Minutes"],
+        ans: 1
+    },
+    {
+        q: "3. What frequency does the dynamic QR token refresh for security?",
+        options: ["Every 10s", "Every 30s", "Every 5m", "Never"],
+        ans: 1
+    }
 ];
 
-const INITIAL_STUDENTS = [
+let INITIAL_STUDENTS = [
     {
         id: "STU-101",
         enrollNo: "CS2026-01",
@@ -35,14 +49,8 @@ const INITIAL_STUDENTS = [
         status: "Absent",
         sessionTimer: 2700,
         sessionActive: false,
-        location: {
-            lat: 28.6139,
-            lng: 77.2090,
-            inZone: true,
-            prediction: "Inside Room 304 (AI Lab)",
-            accuracy: 3.2,
-            lastPing: "10:01 AM"
-        }
+        scannedViaQR: false,
+        location: { lat: 28.6139, lng: 77.2090, inZone: true, prediction: "Inside Room 304 (AI Lab)", accuracy: 3.2, lastPing: "10:01 AM" }
     },
     {
         id: "STU-102",
@@ -55,14 +63,8 @@ const INITIAL_STUDENTS = [
         status: "Absent",
         sessionTimer: 2700,
         sessionActive: false,
-        location: {
-            lat: 28.6140,
-            lng: 77.2092,
-            inZone: true,
-            prediction: "Inside Room 304 (Front Row)",
-            accuracy: 2.8,
-            lastPing: "10:02 AM"
-        }
+        scannedViaQR: false,
+        location: { lat: 28.6140, lng: 77.2092, inZone: true, prediction: "Inside Room 304 (Front Row)", accuracy: 2.8, lastPing: "10:02 AM" }
     },
     {
         id: "STU-103",
@@ -75,14 +77,8 @@ const INITIAL_STUDENTS = [
         status: "Absent",
         sessionTimer: 2700,
         sessionActive: false,
-        location: {
-            lat: 28.6138,
-            lng: 77.2088,
-            inZone: true,
-            prediction: "Inside Room 304 (Middle Row)",
-            accuracy: 4.1,
-            lastPing: "10:00 AM"
-        }
+        scannedViaQR: false,
+        location: { lat: 28.6138, lng: 77.2088, inZone: true, prediction: "Inside Room 304 (Middle Row)", accuracy: 4.1, lastPing: "10:00 AM" }
     },
     {
         id: "STU-104",
@@ -95,14 +91,8 @@ const INITIAL_STUDENTS = [
         status: "Absent",
         sessionTimer: 2700,
         sessionActive: false,
-        location: {
-            lat: 28.6141,
-            lng: 77.2091,
-            inZone: true,
-            prediction: "Inside Room 304 (Window Seat)",
-            accuracy: 2.9,
-            lastPing: "10:03 AM"
-        }
+        scannedViaQR: false,
+        location: { lat: 28.6141, lng: 77.2091, inZone: true, prediction: "Inside Room 304 (Window Seat)", accuracy: 2.9, lastPing: "10:03 AM" }
     },
     {
         id: "STU-105",
@@ -115,14 +105,8 @@ const INITIAL_STUDENTS = [
         status: "Absent",
         sessionTimer: 2700,
         sessionActive: false,
-        location: {
-            lat: 28.6152,
-            lng: 77.2105,
-            inZone: false,
-            prediction: "Campus Cafeteria (140m away)",
-            accuracy: 8.4,
-            lastPing: "10:04 AM"
-        }
+        scannedViaQR: false,
+        location: { lat: 28.6152, lng: 77.2105, inZone: false, prediction: "Campus Cafeteria (140m away)", accuracy: 8.4, lastPing: "10:04 AM" }
     },
     {
         id: "STU-106",
@@ -135,14 +119,8 @@ const INITIAL_STUDENTS = [
         status: "Absent",
         sessionTimer: 2700,
         sessionActive: false,
-        location: {
-            lat: 28.6139,
-            lng: 77.2093,
-            inZone: true,
-            prediction: "Inside Room 304 (Back Row)",
-            accuracy: 3.5,
-            lastPing: "10:01 AM"
-        }
+        scannedViaQR: false,
+        location: { lat: 28.6139, lng: 77.2093, inZone: true, prediction: "Inside Room 304 (Back Row)", accuracy: 3.5, lastPing: "10:01 AM" }
     },
     {
         id: "STU-107",
@@ -155,14 +133,8 @@ const INITIAL_STUDENTS = [
         status: "Absent",
         sessionTimer: 2700,
         sessionActive: false,
-        location: {
-            lat: 28.6142,
-            lng: 77.2089,
-            inZone: true,
-            prediction: "Inside Room 304 (Middle Row)",
-            accuracy: 3.1,
-            lastPing: "10:02 AM"
-        }
+        scannedViaQR: false,
+        location: { lat: 28.6142, lng: 77.2089, inZone: true, prediction: "Inside Room 304 (Middle Row)", accuracy: 3.1, lastPing: "10:02 AM" }
     },
     {
         id: "STU-108",
@@ -175,14 +147,8 @@ const INITIAL_STUDENTS = [
         status: "Absent",
         sessionTimer: 2700,
         sessionActive: false,
-        location: {
-            lat: 28.6139,
-            lng: 77.2091,
-            inZone: true,
-            prediction: "Inside Room 304 (Front Row)",
-            accuracy: 2.7,
-            lastPing: "10:05 AM"
-        }
+        scannedViaQR: false,
+        location: { lat: 28.6139, lng: 77.2091, inZone: true, prediction: "Inside Room 304 (Front Row)", accuracy: 2.7, lastPing: "10:05 AM" }
     },
     {
         id: "STU-109",
@@ -195,14 +161,8 @@ const INITIAL_STUDENTS = [
         status: "Absent",
         sessionTimer: 2700,
         sessionActive: false,
-        location: {
-            lat: 28.6135,
-            lng: 77.2087,
-            inZone: true,
-            prediction: "Near Room 304 Entrance",
-            accuracy: 4.8,
-            lastPing: "10:01 AM"
-        }
+        scannedViaQR: false,
+        location: { lat: 28.6135, lng: 77.2087, inZone: true, prediction: "Near Room 304 Entrance", accuracy: 4.8, lastPing: "10:01 AM" }
     },
     {
         id: "STU-110",
@@ -215,14 +175,8 @@ const INITIAL_STUDENTS = [
         status: "Absent",
         sessionTimer: 2700,
         sessionActive: false,
-        location: {
-            lat: 28.6140,
-            lng: 77.2094,
-            inZone: true,
-            prediction: "Inside Room 304 (Window Seat)",
-            accuracy: 2.3,
-            lastPing: "10:00 AM"
-        }
+        scannedViaQR: false,
+        location: { lat: 28.6140, lng: 77.2094, inZone: true, prediction: "Inside Room 304 (Window Seat)", accuracy: 2.3, lastPing: "10:00 AM" }
     }
 ];
 

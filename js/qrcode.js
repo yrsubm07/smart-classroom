@@ -14,7 +14,6 @@ const QREngine = {
         return this.currentToken;
     },
 
-    // Draws a 100% reliable canvas QR Code
     renderQRCanvas: function(canvasId, text) {
         const canvas = document.getElementById(canvasId);
         if (!canvas) return;
@@ -32,9 +31,9 @@ const QREngine = {
         const gridSize = 21;
         const cellSize = Math.floor(size / gridSize);
 
-        ctx.fillStyle = '#00F2FE'; // Neon cyan modules
+        ctx.fillStyle = '#00F2FE';
 
-        // Finder patterns (Top-Left, Top-Right, Bottom-Left)
+        // Finder patterns
         this.drawFinderPattern(ctx, 0, 0, cellSize);
         this.drawFinderPattern(ctx, (gridSize - 7) * cellSize, 0, cellSize);
         this.drawFinderPattern(ctx, 0, (gridSize - 7) * cellSize, cellSize);
@@ -110,16 +109,17 @@ const QREngine = {
 
         student.status = "Present";
         student.sessionActive = true;
+        student.scannedViaQR = true; // Mark QR scan true for Live Teacher Analytics
         student.sessionTimer = CLASSROOM_GEOFENCE.maxClassDurationMinutes * 60;
         student.location.lastPing = new Date().toLocaleTimeString();
         student.location.inZone = true;
-        student.location.prediction = "Inside Room 304 (Verified)";
+        student.location.prediction = "Inside Room 304 (QR Verified)";
 
         TimerEngine.startStudentTimer(student.id);
         LocationEngine.updateStudentLocation(student.id);
 
-        App.addActivityLog(`✅ QR CHECK-IN: ${student.name} (${student.enrollNo}) registered for 45-min class session.`);
-        App.showNotification(`🎉 Attendance Verified! ${student.name} is registered.`, "success");
+        App.addActivityLog(`✅ QR CHECK-IN: ${student.name} (${student.enrollNo}) scanned QR. 45-min session active.`);
+        App.showNotification(`🎉 Attendance Verified! ${student.name} registered via QR.`, "success");
 
         App.renderAll();
     },

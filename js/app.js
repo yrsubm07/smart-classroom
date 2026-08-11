@@ -1,4 +1,4 @@
-// Master Application Controller & Defensive UI Orchestrator
+// Master Application Controller & UI Orchestrator
 
 const AppState = {
     students: INITIAL_STUDENTS,
@@ -9,10 +9,9 @@ const AppState = {
 
 const App = {
     init: function() {
-        console.log("Initializing Smart AI Classroom Systems...");
         AuthEngine.init();
         
-        // Initialize Timers & Auto-Refresh QR
+        // Initialize Timers & QR Auto-Refresh
         TimerEngine.startMasterTimer();
         QREngine.startAutoRefresh();
 
@@ -26,7 +25,7 @@ const App = {
             this.showLoginScreen();
         }
 
-        // Bind UI events defensively
+        // Bind events defensively
         this.bindEvents();
     },
 
@@ -44,15 +43,15 @@ const App = {
         const loginView = document.getElementById('loginGatewayView');
         const mainApp = document.getElementById('mainAppContainer');
         const navActions = document.getElementById('userNavbarActions');
-        const badge = document.getElementById('navUserBadge');
 
         if (loginView) loginView.style.display = 'none';
         if (mainApp) mainApp.style.display = 'block';
         if (navActions) navActions.style.display = 'flex';
 
         const user = AuthEngine.currentUser;
-        if (user && badge) {
-            badge.innerText = `${user.name} (${user.role.toUpperCase()})`;
+        const navBadgeText = document.getElementById('kebabNavUserText');
+        if (user && navBadgeText) {
+            navBadgeText.innerText = `${user.name} (${user.role.toUpperCase()})`;
         }
 
         const teacherDash = document.getElementById('teacherDashboardView');
@@ -102,15 +101,17 @@ const App = {
         this.renderTeacherProfile();
         this.renderScheduleTable();
         this.renderLeaderboard();
+        this.renderQRAnalyticsBadge();
         ChatEngine.renderMessages();
     },
 
+    // Metrics summary stats
     renderStats: function() {
         const total = AppState.students.length;
         const presentCount = AppState.students.filter(s => s.status === "Present" && s.location.inZone).length;
         const breachCount = AppState.students.filter(s => s.status === "Present" && !s.location.inZone).length;
         const absentCount = total - presentCount - breachCount;
-        const rate = Math.round(((presentCount + breachCount) / total) * 100);
+        const rate = Math.round(((presentCount + breachCount) / (total || 1)) * 100);
 
         const totalElem = document.getElementById('totalStudentsCount');
         const presentElem = document.getElementById('presentCount');
@@ -125,7 +126,18 @@ const App = {
         if (breachElem) breachElem.innerText = breachCount;
     },
 
-    // Render 10 Desk Seating Grid
+    // Teacher QR Scan Real-Time Analytics Badge
+    renderQRAnalyticsBadge: function() {
+        const qrScannedCount = AppState.students.filter(s => s.scannedViaQR).length;
+        const total = AppState.students.length;
+
+        const badgeElem = document.getElementById('qrScanAnalyticsText');
+        if (badgeElem) {
+            badgeElem.innerText = `Registered via QR: ${qrScannedCount} / ${total} Students`;
+        }
+    },
+
+    // 10 Desk Seating Chart
     renderSeatingGrid: function() {
         const container = document.getElementById('seatingGridContainer');
         if (!container) return;
@@ -168,7 +180,7 @@ const App = {
         });
     },
 
-    // Render Live Radar Map Pins
+    // Radar Map Pins
     renderRadarMap: function() {
         const container = document.getElementById('radarMapContainer');
         if (!container) return;
@@ -198,7 +210,7 @@ const App = {
         });
     },
 
-    // Render Student Directory Table
+    // Student Roster Directory Table with Remove Student Action
     renderStudentTable: function() {
         const tbody = document.getElementById('studentTableBody');
         if (!tbody) return;
@@ -256,11 +268,72 @@ const App = {
                     <button class="btn-glass" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 6px;" onclick="LocationEngine.pingRealGPS('${s.id}')">
                         <i class='bx bx-map-pin'></i> GPS
                     </button>
+                    <button class="btn-delete" onclick="App.removeStudent('${s.id}')" title="Remove Student">
+                        <i class='bx bx-trash'></i>
+                    </button>
                 </td>
             `;
 
             tbody.appendChild(tr);
         });
+    },
+
+    // DYNAMICALLY ADD NEW STUDENT TO ROSTER
+    addNewStudent: function(name, enrollNo, seatNo) {
+        if (!name || !enrollNo) {
+            this.showNotification("Please enter student name and enrollment number!", "error");
+            return;
+        }
+
+        const newId = `STU-${100 + AppState.students.length + 1}`;
+        const newStudent = {
+            id: newId,
+            enrollNo: enrollNo.toUpperCase(),
+            password: "password123",
+            name: name,
+            seatNo: seatNo || `Desk ${Math.ceil((AppState.students.length + 1)/2)}${(AppState.students.length % 2 === 0) ? 'A':'B'}`,
+            xpPoints: 200,
+            avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+            status: "Absent",
+            sessionTimer: 2700,
+            sessionActive: false,
+            scannedViaQR: false,
+            location: { lat: 28.6139, lng: 77.2090, inZone: true, prediction: "Inside Room 304", accuracy: 3.0, lastPing: "Just Now" }
+        };
+
+        AppState.students.push(newStudent);
+        this.populateDropdowns();
+        this.renderAll();
+
+        this.showNotification(`Added new student: ${name} (${enrollNo})`, "success");
+        this.addActivityLog(`➕ DYNAMIC ADD: New student ${name} (${enrollNo}) added to Room 304 roster.`);
+
+        this.closeAddStudentModal();
+    },
+
+    // REMOVE STUDENT FROM ROSTER
+    removeStudent: function(id) {
+        const student = AppState.students.find(s => s.id === id);
+        if (!student) return;
+
+        if (confirm(`Are you sure you want to remove ${student.name} (${student.enrollNo}) from Room 304?`)) {
+            AppState.students = AppState.students.filter(s => s.id !== id);
+            this.populateDropdowns();
+            this.renderAll();
+
+            this.showNotification(`Removed ${student.name} from roster.`, "info");
+            this.addActivityLog(`➖ REMOVED: Student ${student.name} (${student.enrollNo}) deleted from Room 304.`);
+        }
+    },
+
+    openAddStudentModal: function() {
+        const modal = document.getElementById('addStudentModal');
+        if (modal) modal.style.display = 'flex';
+    },
+
+    closeAddStudentModal: function() {
+        const modal = document.getElementById('addStudentModal');
+        if (modal) modal.style.display = 'none';
     },
 
     // Class Leaderboard (XP Rankings)
@@ -293,7 +366,6 @@ const App = {
         });
     },
 
-    // Teacher Info Profile Card
     renderTeacherProfile: function() {
         const nameElem = document.getElementById('teacherInfoName');
         const desigElem = document.getElementById('teacherInfoDesig');
@@ -306,7 +378,6 @@ const App = {
         if (roomElem) roomElem.innerText = `${TEACHER_PROFILE.roomNo} • Hours: ${TEACHER_PROFILE.officeHours}`;
     },
 
-    // Class Schedule Timetable
     renderScheduleTable: function() {
         const tbody = document.getElementById('scheduleTableBody');
         if (!tbody) return;
@@ -327,7 +398,6 @@ const App = {
         });
     },
 
-    // Student Self-Portal View
     renderStudentPortal: function() {
         const currentStudentId = (AuthEngine.currentUser && AuthEngine.currentUser.role === 'student') 
             ? AuthEngine.currentUser.id 
@@ -364,7 +434,7 @@ const App = {
         }
     },
 
-    // TEACHER ANNOY CONTROL ACTIONS
+    // TEACHER ANNOY CONTROLS
     triggerPopQuizAttack: function() {
         QREngine.playBeepSound();
         this.showNotification("⚡ POP QUIZ ATTACK! Triggering 10-second sudden quiz alert on student screens...", "warning");
@@ -475,6 +545,35 @@ const App = {
     },
 
     bindEvents: function() {
+        // KEBAB 3-DOT MENU TOGGLE
+        const kebabBtn = document.getElementById('kebabMenuBtn');
+        const kebabDropdown = document.getElementById('kebabDropdownMenu');
+
+        if (kebabBtn && kebabDropdown) {
+            kebabBtn.onclick = (e) => {
+                e.stopPropagation();
+                kebabDropdown.classList.toggle('active');
+            };
+
+            document.addEventListener('click', (e) => {
+                if (!kebabDropdown.contains(e.target) && e.target !== kebabBtn) {
+                    kebabDropdown.classList.remove('active');
+                }
+            });
+        }
+
+        // Add Student Form submit
+        const addStudentForm = document.getElementById('addStudentForm');
+        if (addStudentForm) {
+            addStudentForm.onsubmit = (e) => {
+                e.preventDefault();
+                const name = document.getElementById('newStudentName').value;
+                const enroll = document.getElementById('newStudentEnroll').value;
+                const seat = document.getElementById('newStudentSeat').value;
+                this.addNewStudent(name, enroll, seat);
+            };
+        }
+
         // Login Gateway Tab switching
         const teacherTab = document.getElementById('teacherTabBtn');
         const studentTab = document.getElementById('studentTabBtn');
@@ -521,9 +620,12 @@ const App = {
         }
 
         // Logout
-        const logoutBtn = document.getElementById('logoutBtn');
+        const logoutBtn = document.getElementById('kebabLogoutBtn');
         if (logoutBtn) {
-            logoutBtn.onclick = () => AuthEngine.logout();
+            logoutBtn.onclick = () => {
+                if (kebabDropdown) kebabDropdown.classList.remove('active');
+                AuthEngine.logout();
+            };
         }
 
         // Floating QR toggle
@@ -532,7 +634,7 @@ const App = {
         if (toggleBtn && qrModal) {
             toggleBtn.onclick = () => {
                 qrModal.classList.toggle('active');
-                QREngine.refreshQRCode(); // Ensure QR renders when opening modal
+                QREngine.refreshQRCode();
             };
         }
 
@@ -546,9 +648,12 @@ const App = {
         }
 
         // Class Bell Alarm Trigger Button
-        const alarmBtn = document.getElementById('triggerClassAlarmBtn');
+        const alarmBtn = document.getElementById('kebabAlarmBtn');
         if (alarmBtn) {
-            alarmBtn.onclick = () => TimerEngine.triggerClassBellAlarm();
+            alarmBtn.onclick = () => {
+                if (kebabDropdown) kebabDropdown.classList.remove('active');
+                TimerEngine.triggerClassBellAlarm();
+            };
         }
 
         // Group Chat Submit Forms

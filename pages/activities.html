@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Free-Time Activity Hub & AI Quiz Zone</title>
+    <title>Classroom Quiz Hub & Teacher Quiz Customizer</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/styles.css">
@@ -14,16 +14,22 @@
         <div class="bg-orb bg-orb-2"></div>
     </div>
 
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
     <!-- Navigation Header -->
     <nav class="navbar">
         <div class="brand">
-            <div class="brand-icon"><i class='bx bx-joystick'></i></div>
-            <div class="brand-text">Student Free-Time<span>Activity Hub</span></div>
+            <div class="brand-icon"><i class='bx bx-brain'></i></div>
+            <div class="brand-text">Classroom<span>Quiz Zone</span></div>
         </div>
 
         <div class="header-actions">
-            <a href="../index.html" class="btn-glass">
-                <i class='bx bx-arrow-back'></i> Back to Classroom Portal
+            <button class="btn-glass" id="toggleTeacherQuizEditorBtn" style="border-color: rgba(0, 242, 254, 0.4); color: var(--primary-cyan);">
+                <i class='bx bx-edit'></i> Teacher Quiz Editor
+            </button>
+            <a href="../index.html" class="btn-primary">
+                <i class='bx bx-home-alt'></i> Back to Classroom Portal
             </a>
         </div>
     </nav>
@@ -31,131 +37,113 @@
     <main class="main-container">
         
         <div style="text-align: center; margin-bottom: 32px;">
-            <span class="badge-pill" style="margin-bottom: 12px;"><i class='bx bx-star'></i> Earn Class XP Points</span>
-            <h1 style="font-size: 2.2rem; font-weight: 800;">Free-Time Break & Challenge Zone</h1>
-            <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto;">Finished your lab work early? Challenge yourself with AI trivia, boost focus with memory games, or relax with a 2-minute breathing timer!</p>
+            <span class="badge-pill" style="margin-bottom: 12px;"><i class='bx bx-star'></i> Live Classroom Quiz Hub</span>
+            <h1 style="font-size: 2.2rem; font-weight: 800;">Smart AI & Course Trivia Challenge</h1>
+            <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto;">Finished your lab work early? Take the official class quiz set by your instructor to earn +50 XP on the class leaderboard!</p>
         </div>
 
-        <!-- 3 Activity Cards Grid -->
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 36px;">
-            
-            <!-- Card 1: AI & Tech Quiz Challenge -->
-            <div class="glass-panel" style="text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
-                <div>
-                    <div class="stat-icon cyan" style="margin: 0 auto 16px; width: 64px; height: 64px; font-size: 2rem;">
-                        <i class='bx bx-brain'></i>
-                    </div>
-                    <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 8px;">AI & Tech Trivia Quiz</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px;">Answer 5 quick multiple-choice questions to earn +50 XP on the class leaderboard.</p>
+        <!-- MAIN QUIZ DISPLAY CARD -->
+        <div class="glass-panel" style="max-width: 680px; margin: 0 auto 36px; border-color: var(--border-glow);">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class='bx bx-brain'></i> Official Course Quiz Challenge
                 </div>
-                <button class="btn-primary" onclick="openQuizModal()" style="width: 100%; justify-content: center;">
-                    <i class='bx bx-play-circle'></i> Start Quiz (+50 XP)
-                </button>
+                <span class="badge-pill" id="quizScoreBadge">Score: 0 / 0</span>
             </div>
 
-            <!-- Card 2: Memory & Focus Challenge -->
-            <div class="glass-panel" style="text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
-                <div>
-                    <div class="stat-icon purple" style="margin: 0 auto 16px; width: 64px; height: 64px; font-size: 2rem;">
-                        <i class='bx bx-target-lock'></i>
-                    </div>
-                    <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 8px;">Memory Grid Challenge</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px;">Test your memory by matching glowing tiles in sequence.</p>
-                </div>
-                <button class="btn-glass" onclick="alert('Memory Challenge Started! Memory tiles loading...')" style="width: 100%; justify-content: center; border-color: rgba(127,0,255,0.4); color: #A855F7;">
-                    <i class='bx bx-game'></i> Play Memory Game
-                </button>
-            </div>
-
-            <!-- Card 3: 2-Minute Mindful Focus Timer -->
-            <div class="glass-panel" style="text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
-                <div>
-                    <div class="stat-icon green" style="margin: 0 auto 16px; width: 64px; height: 64px; font-size: 2rem;">
-                        <i class='bx bx-spa'></i>
-                    </div>
-                    <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 8px;">2-Min Mindful Reset</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px;">Guided 2-minute breathing exercise to reset your attention before the next lecture.</p>
-                </div>
-                <button class="btn-glass" onclick="startRelaxTimer()" style="width: 100%; justify-content: center; border-color: rgba(16,185,129,0.4); color: var(--success-green);">
-                    <i class='bx bx-timer'></i> Start 2-Min Reset
-                </button>
-            </div>
-
-        </div>
-
-        <!-- AI Quiz Interactive Modal -->
-        <div id="quizModal" class="glass-panel" style="display: none; max-width: 540px; margin: 0 auto; text-align: left; border-color: var(--border-glow);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h3 style="font-size: 1.2rem; font-weight: 700;">🧠 Quick AI Quiz Challenge</h3>
-                <span class="badge-pill" id="quizScoreText">Score: 0 / 5</span>
-            </div>
-
-            <div id="quizContainer">
-                <p id="quizQuestionText" style="font-size: 1rem; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">
-                    Q1: What does GPS stand for in smart classroom geofencing?
+            <div id="quizPlayContainer" style="padding: 10px 0;">
+                <p id="quizQuestionText" style="font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; color: var(--text-primary);">
+                    Loading quiz question...
                 </p>
 
-                <div id="quizOptionsBox" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                <div id="quizOptionsBox" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
                     <!-- Filled by JS -->
                 </div>
             </div>
+        </div>
 
-            <button class="btn-glass" onclick="closeQuizModal()" style="width: 100%; justify-content: center;">
-                Close Quiz
-            </button>
+        <!-- TEACHER QUIZ CUSTOMIZER PANEL (Hidden by Default) -->
+        <div class="glass-panel" id="teacherQuizEditorPanel" style="display: none; max-width: 680px; margin: 0 auto; border-color: rgba(245, 158, 11, 0.4);">
+            <div class="panel-header">
+                <div class="panel-title" style="color: var(--warning-amber);">
+                    <i class='bx bx-edit-alt'></i> Instructor Custom Quiz Editor
+                </div>
+                <span class="badge-pill" style="border-color: rgba(245, 158, 11, 0.4); color: var(--warning-amber);">Teacher Exclusive</span>
+            </div>
+
+            <form id="addQuestionForm">
+                <div class="form-group">
+                    <label>New Question Text:</label>
+                    <input type="text" id="newQuestionText" class="form-control" placeholder="e.g. What is the geofence radius of Room 304?" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Option A (Index 0):</label>
+                        <input type="text" id="optA" class="form-control" placeholder="Option A" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Option B (Index 1):</label>
+                        <input type="text" id="optB" class="form-control" placeholder="Option B" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Option C (Index 2):</label>
+                        <input type="text" id="optC" class="form-control" placeholder="Option C" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Option D (Index 3):</label>
+                        <input type="text" id="optD" class="form-control" placeholder="Option D" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Correct Option Number:</label>
+                    <select id="correctOptSelect" class="form-control">
+                        <option value="0">Option A (Index 0)</option>
+                        <option value="1">Option B (Index 1)</option>
+                        <option value="2">Option C (Index 2)</option>
+                        <option value="3">Option D (Index 3)</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">
+                    <i class='bx bx-plus-circle'></i> Add Question to Class Quiz
+                </button>
+            </form>
         </div>
 
     </main>
 
+    <script src="../data/students.js"></script>
     <script>
-        const QUIZ_QUESTIONS = [
-            {
-                q: "1. What formula calculates spherical distance between GPS coordinates in geofencing?",
-                options: ["Haversine Formula", "Pythagoras Theorem", "Euclidean Distance", "Manhattan Distance"],
-                ans: 0
-            },
-            {
-                q: "2. What is the standard duration of the class session timer in Room 304?",
-                options: ["30 Minutes", "45 Minutes", "60 Minutes", "90 Minutes"],
-                ans: 1
-            },
-            {
-                q: "3. What frequency does the dynamic QR token refresh for security?",
-                options: ["Every 10s", "Every 30s", "Every 5m", "Never"],
-                ans: 1
-            }
-        ];
+        let quizList = DEFAULT_TEACHER_QUIZ;
+
+        // Load custom saved quiz from localStorage if available
+        const savedQuiz = localStorage.getItem('smart_class_custom_quiz');
+        if (savedQuiz) {
+            try { quizList = JSON.parse(savedQuiz); } catch(e){}
+        }
 
         let qIndex = 0;
         let score = 0;
 
-        function openQuizModal() {
-            document.getElementById('quizModal').style.display = 'block';
-            qIndex = 0;
-            score = 0;
-            renderQuestion();
-        }
-
-        function closeQuizModal() {
-            document.getElementById('quizModal').style.display = 'none';
-        }
-
         function renderQuestion() {
-            if (qIndex >= QUIZ_QUESTIONS.length) {
-                document.getElementById('quizContainer').innerHTML = `
+            if (qIndex >= quizList.length) {
+                document.getElementById('quizPlayContainer').innerHTML = `
                     <div style="text-align:center; padding: 20px;">
-                        <i class='bx bx-trophy' style="font-size: 3.5rem; color: var(--warning-amber);"></i>
-                        <h2 style="margin-top:10px;">Quiz Completed!</h2>
-                        <p style="color:var(--text-secondary);">Your Score: ${score} / ${QUIZ_QUESTIONS.length}</p>
-                        <p style="color:var(--success-green); font-weight:700; margin-top:8px;">+50 XP Added to Leaderboard!</p>
+                        <i class='bx bx-trophy' style="font-size: 4rem; color: var(--warning-amber);"></i>
+                        <h2 style="margin-top:12px; font-size:1.8rem; font-weight:800;">Quiz Completed!</h2>
+                        <p style="color:var(--text-secondary); font-size:1.1rem; margin-top:6px;">Your Final Score: <strong>${score} / ${quizList.length}</strong></p>
+                        <p style="color:var(--success-green); font-weight:700; margin-top:10px;">🎉 +50 XP Points Added to your Leaderboard Rank!</p>
+                        <button class="btn-primary" onclick="resetQuiz()" style="margin-top:20px;">Retake Quiz</button>
                     </div>
                 `;
                 return;
             }
 
-            const current = QUIZ_QUESTIONS[qIndex];
-            document.getElementById('quizQuestionText').innerText = current.q;
-            document.getElementById('quizScoreText').innerText = `Score: ${score} / ${QUIZ_QUESTIONS.length}`;
+            const current = quizList[qIndex];
+            document.getElementById('quizQuestionText').innerText = `${qIndex + 1}. ${current.q}`;
+            document.getElementById('quizScoreBadge').innerText = `Score: ${score} / ${quizList.length}`;
 
             const box = document.getElementById('quizOptionsBox');
             box.innerHTML = '';
@@ -163,8 +151,8 @@
             current.options.forEach((opt, idx) => {
                 const btn = document.createElement('button');
                 btn.className = 'btn-glass';
-                btn.style.cssText = 'text-align: left; width: 100%; padding: 12px; justify-content: flex-start;';
-                btn.innerText = opt;
+                btn.style.cssText = 'text-align: left; width: 100%; padding: 14px; justify-content: flex-start; font-size: 0.95rem;';
+                btn.innerText = `${String.fromCharCode(65 + idx)}. ${opt}`;
                 btn.onclick = () => {
                     if (idx === current.ans) score++;
                     qIndex++;
@@ -174,9 +162,51 @@
             });
         }
 
-        function startRelaxTimer() {
-            alert("🧘 2-Minute Breathing Exercise started! Take deep breaths in and out...");
+        function resetQuiz() {
+            qIndex = 0;
+            score = 0;
+            renderQuestion();
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderQuestion();
+
+            // Toggle Teacher Editor Panel
+            const toggleBtn = document.getElementById('toggleTeacherQuizEditorBtn');
+            const panel = document.getElementById('teacherQuizEditorPanel');
+
+            if (toggleBtn && panel) {
+                toggleBtn.onclick = () => {
+                    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                };
+            }
+
+            // Form Submit for New Question
+            const form = document.getElementById('addQuestionForm');
+            if (form) {
+                form.onsubmit = (e) => {
+                    e.preventDefault();
+                    const qText = document.getElementById('newQuestionText').value;
+                    const a = document.getElementById('optA').value;
+                    const b = document.getElementById('optB').value;
+                    const c = document.getElementById('optC').value;
+                    const d = document.getElementById('optD').value;
+                    const correct = parseInt(document.getElementById('correctOptSelect').value);
+
+                    quizList.push({
+                        q: qText,
+                        options: [a, b, c, d],
+                        ans: correct
+                    });
+
+                    localStorage.setItem('smart_class_custom_quiz', JSON.stringify(quizList));
+                    alert("New question added to Class Quiz successfully!");
+
+                    form.reset();
+                    resetQuiz();
+                };
+            }
+        });
     </script>
 </body>
 </html>

@@ -95,18 +95,98 @@ body {
 .brand-icon { width: 40px; height: 40px; border-radius: var(--radius-sm); background: var(--accent-glow); display: flex; align-items: center; justify-content: center; color: #000; font-size: 1.4rem; box-shadow: var(--shadow-neon); }
 .brand-text span { background: var(--accent-glow); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-.header-actions { display: flex; align-items: center; gap: 14px; }
+/* PROFESSIONAL 3-DOT KEBAB MENU SYSTEM */
+.kebab-menu-container {
+    position: relative;
+}
 
-.badge-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: var(--radius-full); background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.25); color: var(--primary-cyan); font-size: 0.85rem; font-weight: 600; }
-.badge-pill .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-cyan); box-shadow: 0 0 10px var(--primary-cyan); animation: pulse 1.8s infinite; }
+.kebab-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.25s ease;
+}
 
-@keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.5; } }
+.kebab-btn:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--primary-cyan);
+    color: var(--primary-cyan);
+    box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+}
+
+.kebab-dropdown {
+    position: absolute;
+    top: 55px;
+    right: 0;
+    width: 310px;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid var(--border-glow);
+    border-radius: var(--radius-lg);
+    padding: 12px;
+    backdrop-filter: blur(25px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 1000;
+    animation: slideUp 0.25s forwards;
+}
+
+.kebab-dropdown.active {
+    display: flex;
+}
+
+.kebab-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+}
+
+.kebab-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--primary-cyan);
+}
 
 .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: var(--radius-full); background: var(--accent-glow); color: #070a13; font-weight: 700; font-size: 0.9rem; border: none; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3); }
 .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(0, 242, 254, 0.5); }
 
 .btn-glass { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: var(--radius-full); background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); font-weight: 600; font-size: 0.9rem; cursor: pointer; backdrop-filter: blur(10px); transition: all 0.25s ease; }
 .btn-glass:hover { background: var(--bg-card-hover); border-color: rgba(255, 255, 255, 0.2); }
+
+.btn-delete {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    background: rgba(244, 63, 94, 0.12);
+    border: 1px solid rgba(244, 63, 94, 0.3);
+    color: var(--danger-rose);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-delete:hover {
+    background: rgba(244, 63, 94, 0.3);
+}
 
 /* LOGIN GATEWAY VIEW */
 .login-gateway-view {
@@ -128,33 +208,9 @@ body {
     box-shadow: var(--shadow-glass);
 }
 
-.login-tabs {
-    display: flex;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 4px;
-    border-radius: var(--radius-full);
-    margin-bottom: 28px;
-    border: 1px solid var(--border-color);
-}
-
-.login-tab-btn {
-    flex: 1;
-    padding: 10px;
-    border-radius: var(--radius-full);
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    font-weight: 700;
-    font-size: 0.88rem;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.login-tab-btn.active {
-    background: var(--accent-glow);
-    color: #070a13;
-    box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
-}
+.login-tabs { display: flex; background: rgba(0, 0, 0, 0.3); padding: 4px; border-radius: var(--radius-full); margin-bottom: 28px; border: 1px solid var(--border-color); }
+.login-tab-btn { flex: 1; padding: 10px; border-radius: var(--radius-full); border: none; background: transparent; color: var(--text-secondary); font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: all 0.3s; }
+.login-tab-btn.active { background: var(--accent-glow); color: #070a13; box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3); }
 
 .form-group { margin-bottom: 20px; text-align: left; }
 .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
@@ -184,7 +240,7 @@ body {
 .panel-title { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
 .panel-title i { color: var(--primary-cyan); }
 
-/* SEATING GRID (10 DESKS) */
+/* SEATING GRID (DESKS) */
 .seating-grid-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-top: 16px; }
 
 .seat-card { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; text-align: center; position: relative; transition: all 0.3s ease; cursor: pointer; }
