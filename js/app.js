@@ -1,54 +1,70 @@
-// Master Application Controller & UI Orchestrator
+// Master Application Controller & Defensive UI Orchestrator
 
 const AppState = {
     students: INITIAL_STUDENTS,
     filterStatus: "all",
-    searchQuery: ""
+    searchQuery: "",
+    selectedStudentId: "STU-101"
 };
 
 const App = {
     init: function() {
+        console.log("Initializing Smart AI Classroom Systems...");
         AuthEngine.init();
         
         // Initialize Timers & Auto-Refresh QR
         TimerEngine.startMasterTimer();
         QREngine.startAutoRefresh();
 
-        // Populate selects
+        // Populate dropdowns
         this.populateDropdowns();
 
-        // Check authentication
+        // Check authentication state
         if (AuthEngine.currentUser) {
             this.showMainApp();
         } else {
             this.showLoginScreen();
         }
 
-        // Bind UI events
+        // Bind UI events defensively
         this.bindEvents();
     },
 
     showLoginScreen: function() {
-        document.getElementById('loginGatewayView').style.display = 'flex';
-        document.getElementById('mainAppContainer').style.display = 'none';
-        document.getElementById('userNavbarActions').style.display = 'none';
+        const loginView = document.getElementById('loginGatewayView');
+        const mainApp = document.getElementById('mainAppContainer');
+        const navActions = document.getElementById('userNavbarActions');
+
+        if (loginView) loginView.style.display = 'flex';
+        if (mainApp) mainApp.style.display = 'none';
+        if (navActions) navActions.style.display = 'none';
     },
 
     showMainApp: function() {
-        document.getElementById('loginGatewayView').style.display = 'none';
-        document.getElementById('mainAppContainer').style.display = 'block';
-        document.getElementById('userNavbarActions').style.display = 'flex';
+        const loginView = document.getElementById('loginGatewayView');
+        const mainApp = document.getElementById('mainAppContainer');
+        const navActions = document.getElementById('userNavbarActions');
+        const badge = document.getElementById('navUserBadge');
+
+        if (loginView) loginView.style.display = 'none';
+        if (mainApp) mainApp.style.display = 'block';
+        if (navActions) navActions.style.display = 'flex';
 
         const user = AuthEngine.currentUser;
-        document.getElementById('navUserBadge').innerText = `${user.name} (${user.role.toUpperCase()})`;
+        if (user && badge) {
+            badge.innerText = `${user.name} (${user.role.toUpperCase()})`;
+        }
 
-        if (user.role === "teacher") {
-            document.getElementById('teacherDashboardView').style.display = 'grid';
-            document.getElementById('studentPortalView').style.display = 'none';
+        const teacherDash = document.getElementById('teacherDashboardView');
+        const studentPortal = document.getElementById('studentPortalView');
+
+        if (user && user.role === "teacher") {
+            if (teacherDash) teacherDash.style.display = 'grid';
+            if (studentPortal) studentPortal.style.display = 'none';
         } else {
-            document.getElementById('teacherDashboardView').style.display = 'none';
-            document.getElementById('studentPortalView').style.display = 'block';
-            AppState.selectedStudentId = user.id;
+            if (teacherDash) teacherDash.style.display = 'none';
+            if (studentPortal) studentPortal.style.display = 'block';
+            if (user) AppState.selectedStudentId = user.id;
         }
 
         this.renderAll();
@@ -96,14 +112,20 @@ const App = {
         const absentCount = total - presentCount - breachCount;
         const rate = Math.round(((presentCount + breachCount) / total) * 100);
 
-        document.getElementById('totalStudentsCount').innerText = total;
-        document.getElementById('presentCount').innerText = presentCount;
-        document.getElementById('absentCount').innerText = absentCount;
-        document.getElementById('attendanceRate').innerText = `${rate}%`;
-        document.getElementById('breachAlertCount').innerText = breachCount;
+        const totalElem = document.getElementById('totalStudentsCount');
+        const presentElem = document.getElementById('presentCount');
+        const absentElem = document.getElementById('absentCount');
+        const rateElem = document.getElementById('attendanceRate');
+        const breachElem = document.getElementById('breachAlertCount');
+
+        if (totalElem) totalElem.innerText = total;
+        if (presentElem) presentElem.innerText = presentCount;
+        if (absentElem) absentElem.innerText = absentCount;
+        if (rateElem) rateElem.innerText = `${rate}%`;
+        if (breachElem) breachElem.innerText = breachCount;
     },
 
-    // 10 Desk Seating Chart
+    // Render 10 Desk Seating Grid
     renderSeatingGrid: function() {
         const container = document.getElementById('seatingGridContainer');
         if (!container) return;
@@ -146,7 +168,7 @@ const App = {
         });
     },
 
-    // Radar Map Pins
+    // Render Live Radar Map Pins
     renderRadarMap: function() {
         const container = document.getElementById('radarMapContainer');
         if (!container) return;
@@ -176,7 +198,7 @@ const App = {
         });
     },
 
-    // Student Roster Directory Table
+    // Render Student Directory Table
     renderStudentTable: function() {
         const tbody = document.getElementById('studentTableBody');
         if (!tbody) return;
@@ -271,7 +293,7 @@ const App = {
         });
     },
 
-    // Teacher Info Profile Card (Student View)
+    // Teacher Info Profile Card
     renderTeacherProfile: function() {
         const nameElem = document.getElementById('teacherInfoName');
         const desigElem = document.getElementById('teacherInfoDesig');
@@ -305,7 +327,7 @@ const App = {
         });
     },
 
-    // Render Student Self-Portal View
+    // Student Self-Portal View
     renderStudentPortal: function() {
         const currentStudentId = (AuthEngine.currentUser && AuthEngine.currentUser.role === 'student') 
             ? AuthEngine.currentUser.id 
@@ -342,10 +364,10 @@ const App = {
         }
     },
 
-    // TEACHER ANNOY & SURPRISE CONTROL ACTIONS
+    // TEACHER ANNOY CONTROL ACTIONS
     triggerPopQuizAttack: function() {
         QREngine.playBeepSound();
-        this.showNotification("⚡ POP QUIZ ATTACK! Triggering 10-second sudden quiz on student screens...", "warning");
+        this.showNotification("⚡ POP QUIZ ATTACK! Triggering 10-second sudden quiz alert on student screens...", "warning");
         this.addActivityLog("⚡ TEACHER ACTION: Initiated sudden Pop Quiz Attack on Room 304.");
         alert("🚨 TEACHER POP QUIZ ATTACK! All students must answer Q1 within 10 seconds!");
     },
@@ -355,7 +377,6 @@ const App = {
         this.showNotification("📳 WAKE-UP SHAKE ALERT: Shaking sleeping students' desk screens!", "error");
         this.addActivityLog("📳 TEACHER ACTION: Triggered WAKE-UP Desk Vibration Shake Alert.");
         
-        // Shake body for visual effect
         document.body.style.animation = "shake 0.5s ease";
         setTimeout(() => document.body.style.animation = "", 500);
     },
@@ -509,7 +530,10 @@ const App = {
         const toggleBtn = document.getElementById('qrToggleBtn');
         const qrModal = document.getElementById('qrWidgetModal');
         if (toggleBtn && qrModal) {
-            toggleBtn.onclick = () => qrModal.classList.toggle('active');
+            toggleBtn.onclick = () => {
+                qrModal.classList.toggle('active');
+                QREngine.refreshQRCode(); // Ensure QR renders when opening modal
+            };
         }
 
         // Refresh QR
@@ -527,7 +551,7 @@ const App = {
             alarmBtn.onclick = () => TimerEngine.triggerClassBellAlarm();
         }
 
-        // Group Chat Submit Forms (Teacher & Student forms)
+        // Group Chat Submit Forms
         const chatFormStudent = document.getElementById('groupChatFormStudent');
         if (chatFormStudent) {
             chatFormStudent.onsubmit = (e) => {
