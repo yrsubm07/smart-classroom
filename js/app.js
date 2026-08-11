@@ -1,72 +1,81 @@
-// Main Smart Classroom Application State & UI Renderer
+// Full-Featured Smart Classroom UI Orchestrator & Controller
 
 const AppState = {
     students: INITIAL_STUDENTS,
-    currentRole: "teacher", // "teacher" or "student"
+    currentRole: "teacher", // "teacher" | "student"
     selectedStudentId: "STU-101",
     activityLogs: [],
-    filterStatus: "all"
+    filterStatus: "all",
+    searchQuery: ""
 };
 
 const App = {
     init: function() {
-        this.addActivityLog("System Initialized: Smart AI Classroom Room 304 Ready.");
+        this.addActivityLog("🚀 Smart AI Classroom Room 304 Initialized.");
         
-        // Start Master Class Session Timer
-        TimerEngine.startGlobalClassSession();
+        // Start Timers & QR Generator
+        TimerEngine.startMasterTimer();
+        QREngine.startAutoRefresh();
 
-        // Start Auto-Refreshing Side-Corner QR Token
-        QREngine.startAutoRefresh('qrCodeContainer');
-
-        // Populate Student Select Dropdowns
-        this.populateStudentDropdowns();
+        // Populate Select Controls
+        this.populateDropdowns();
 
         // Initial UI Render
         this.renderAll();
 
-        // Setup Event Listeners
-        this.setupEventListeners();
+        // Bind Controls & Event Listeners
+        this.bindEvents();
     },
 
-    // Populate student select options
-    populateStudentDropdowns: function() {
-        const scannerSelect = document.getElementById('scanStudentSelect');
+    populateDropdowns: function() {
+        const scanSelect = document.getElementById('scanStudentSelect');
         const breachSelect = document.getElementById('breachStudentSelect');
+        const studentPortalSelect = document.getElementById('studentPortalSelect');
 
-        if (scannerSelect && breachSelect) {
-            scannerSelect.innerHTML = '';
+        if (scanSelect && breachSelect) {
+            scanSelect.innerHTML = '';
             breachSelect.innerHTML = '';
+
+            if (studentPortalSelect) studentPortalSelect.innerHTML = '';
 
             AppState.students.forEach(s => {
                 const opt1 = document.createElement('option');
                 opt1.value = s.id;
                 opt1.innerText = `${s.name} (${s.rollNo})`;
-                scannerSelect.appendChild(opt1);
+                scanSelect.appendChild(opt1);
 
                 const opt2 = document.createElement('option');
                 opt2.value = s.id;
                 opt2.innerText = `${s.name} (${s.rollNo})`;
                 breachSelect.appendChild(opt2);
+
+                if (studentPortalSelect) {
+                    const opt3 = document.createElement('option');
+                    opt3.value = s.id;
+                    opt3.innerText = `${s.name} (${s.seatNo})`;
+                    studentPortalSelect.appendChild(opt3);
+                }
             });
         }
     },
 
-    // Render all UI components
     renderAll: function() {
         this.renderStats();
         this.renderSeatingGrid();
         this.renderRadarMap();
         this.renderStudentTable();
         this.renderActivityLogs();
+        this.renderStudentPortal();
+        this.renderAttendanceGraph();
     },
 
-    // Update Top Summary Stats
+    // Metrics summary stats
     renderStats: function() {
         const total = AppState.students.length;
         const presentCount = AppState.students.filter(s => s.status === "Present" && s.location.inZone).length;
-        const breachCount = AppState.students.filter(s => !s.location.inZone && s.status === "Present").length;
+        const breachCount = AppState.students.filter(s => s.status === "Present" && !s.location.inZone).length;
         const absentCount = total - presentCount - breachCount;
-        const rate = Math.round((presentCount / total) * 100);
+        const rate = Math.round(((presentCount + breachCount) / total) * 100);
 
         document.getElementById('totalStudentsCount').innerText = total;
         document.getElementById('presentCount').innerText = presentCount;
@@ -75,7 +84,7 @@ const App = {
         document.getElementById('breachAlertCount').innerText = breachCount;
     },
 
-    // Render 10 Desk Seating Grid
+    // 10 Desk Seating Chart
     renderSeatingGrid: function() {
         const container = document.getElementById('seatingGridContainer');
         if (!container) return;
@@ -102,7 +111,7 @@ const App = {
             }
 
             card.className = `seat-card ${statusClass}`;
-            card.onclick = () => this.selectStudent(student.id);
+            card.onclick = () => this.openDeskModal(student.id);
 
             card.innerHTML = `
                 <span class="seat-badge ${badgeClass}">${badgeText}</span>
@@ -118,39 +127,38 @@ const App = {
         });
     },
 
-    // Render Interactive Radar Map Pins
+    // Radar Map Pins
     renderRadarMap: function() {
         const container = document.getElementById('radarMapContainer');
         if (!container) return;
 
-        // Keep radar circles, remove old pins
         const existingPins = container.querySelectorAll('.radar-pin');
         existingPins.forEach(p => p.remove());
 
-        AppState.students.forEach((student, index) => {
+        AppState.students.forEach((student) => {
             if (student.status !== "Present") return;
 
             const pin = document.createElement('div');
             pin.className = `radar-pin ${student.location.inZone ? '' : 'pin-breach'}`;
 
-            // Calculate pin position relative to center based on simulated offsets
-            const latDiff = (student.location.lat - CLASSROOM_GEOFENCE.centerLat) * 120000;
-            const lngDiff = (student.location.lng - CLASSROOM_GEOFENCE.centerLng) * 120000;
+            // Scale offsets for radar
+            const latDiff = (student.location.lat - CLASSROOM_GEOFENCE.centerLat) * 140000;
+            const lngDiff = (student.location.lng - CLASSROOM_GEOFENCE.centerLng) * 140000;
 
             const x = 110 + lngDiff;
             const y = 110 - latDiff;
 
             pin.style.left = `${Math.min(Math.max(x, 15), 205)}px`;
             pin.style.top = `${Math.min(Math.max(y, 15), 205)}px`;
-            pin.title = `${student.name}: ${student.location.inZone ? "Inside Classroom" : "OUTSIDE GEOFENCE!"}`;
+            pin.title = `${student.name}: ${student.location.inZone ? "Inside Room 304" : "BREACH ALERT!"}`;
 
-            pin.onclick = () => this.showNotification(`GPS Ping: ${student.name} (${student.location.lat.toFixed(4)}, ${student.location.lng.toFixed(4)}) - ${student.location.inZone ? "In Zone" : "Out of Zone"}`, student.location.inZone ? "info" : "warning");
+            pin.onclick = () => this.showNotification(`GPS Fix: ${student.name} is ${LocationEngine.checkGeofence(student.location.lat, student.location.lng).distanceMeters}m away`, student.location.inZone ? "info" : "warning");
 
             container.appendChild(pin);
         });
     },
 
-    // Render Student Table Roster
+    // Student Roster Table with Search & Filter
     renderStudentTable: function() {
         const tbody = document.getElementById('studentTableBody');
         if (!tbody) return;
@@ -158,12 +166,18 @@ const App = {
         tbody.innerHTML = '';
 
         let filtered = AppState.students;
+
         if (AppState.filterStatus === "present") {
-            filtered = AppState.students.filter(s => s.status === "Present" && s.location.inZone);
+            filtered = filtered.filter(s => s.status === "Present" && s.location.inZone);
         } else if (AppState.filterStatus === "breach") {
-            filtered = AppState.students.filter(s => s.status === "Present" && !s.location.inZone);
+            filtered = filtered.filter(s => s.status === "Present" && !s.location.inZone);
         } else if (AppState.filterStatus === "absent") {
-            filtered = AppState.students.filter(s => s.status === "Absent");
+            filtered = filtered.filter(s => s.status === "Absent");
+        }
+
+        if (AppState.searchQuery) {
+            const q = AppState.searchQuery.toLowerCase();
+            filtered = filtered.filter(s => s.name.toLowerCase().includes(q) || s.rollNo.toLowerCase().includes(q) || s.seatNo.toLowerCase().includes(q));
         }
 
         filtered.forEach(s => {
@@ -175,6 +189,8 @@ const App = {
                     ? `<span class="seat-badge present">Present (In Zone)</span>` 
                     : `<span class="seat-badge warning">Out of Range</span>`;
             }
+
+            const dist = LocationEngine.checkGeofence(s.location.lat, s.location.lng).distanceMeters;
 
             tr.innerHTML = `
                 <td>
@@ -189,10 +205,13 @@ const App = {
                 <td>${s.seatNo}</td>
                 <td>${statusBadge}</td>
                 <td><strong>${s.sessionActive ? TimerEngine.formatTime(s.sessionTimer) : "Inactive"}</strong></td>
-                <td>${s.location.lastPing}</td>
+                <td><small>${dist}m • ${s.location.lastPing}</small></td>
                 <td>
-                    <button class="btn-glass" style="padding: 4px 10px; font-size: 0.75rem;" onclick="LocationEngine.requestRealGeolocation('${s.id}')">
-                        <i class='bx bx-map-pin'></i> Ping GPS
+                    <button class="btn-primary" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 6px;" onclick="QREngine.processScan('${s.id}')">
+                        <i class='bx bx-qr-scan'></i> Scan
+                    </button>
+                    <button class="btn-glass" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 6px;" onclick="LocationEngine.pingRealGPS('${s.id}')">
+                        <i class='bx bx-map-pin'></i> GPS
                     </button>
                 </td>
             `;
@@ -201,15 +220,102 @@ const App = {
         });
     },
 
-    // Add log item
-    addActivityLog: function(text) {
-        const timestamp = new Date().toLocaleTimeString();
-        AppState.activityLogs.unshift(`[${timestamp}] ${text}`);
-        if (AppState.activityLogs.length > 20) AppState.activityLogs.pop();
+    // Render Student Self-Portal View
+    renderStudentPortal: function() {
+        const student = AppState.students.find(s => s.id === AppState.selectedStudentId);
+        if (!student) return;
+
+        const nameElem = document.getElementById('portalStudentName');
+        const rollElem = document.getElementById('portalStudentRoll');
+        const avatarElem = document.getElementById('portalStudentAvatar');
+        const timerElem = document.getElementById('studentPortalTimer');
+        const distElem = document.getElementById('portalDistanceText');
+        const statusBadgeElem = document.getElementById('portalStatusBadge');
+
+        if (nameElem) nameElem.innerText = student.name;
+        if (rollElem) rollElem.innerText = `${student.rollNo} • ${student.seatNo}`;
+        if (avatarElem) avatarElem.src = student.avatar;
+        if (timerElem) timerElem.innerText = student.sessionActive ? TimerEngine.formatTime(student.sessionTimer) : "00:00";
+
+        const dist = LocationEngine.checkGeofence(student.location.lat, student.location.lng).distanceMeters;
+        if (distElem) distElem.innerText = `${dist} Meters`;
+
+        if (statusBadgeElem) {
+            if (student.status === "Present") {
+                statusBadgeElem.className = student.location.inZone ? "seat-badge present" : "seat-badge warning";
+                statusBadgeElem.innerText = student.location.inZone ? "45-MIN SESSION ACTIVE" : "GEOFENCE BREACH ALERT";
+            } else {
+                statusBadgeElem.className = "seat-badge absent";
+                statusBadgeElem.innerText = "NOT CHECKED IN";
+            }
+        }
+    },
+
+    // Render CSS 7-Day Attendance Trend Bar Graph
+    renderAttendanceGraph: function() {
+        const graphContainer = document.getElementById('weeklyTrendGraph');
+        if (!graphContainer) return;
+
+        const mockData = [
+            { day: "Mon", rate: 90 },
+            { day: "Tue", rate: 95 },
+            { day: "Wed", rate: 85 },
+            { day: "Thu", rate: 100 },
+            { day: "Fri", rate: 90 },
+            { day: "Sat", rate: 70 },
+            { day: "Today", rate: Math.round((AppState.students.filter(s=>s.status==="Present").length / 10) * 100) }
+        ];
+
+        graphContainer.innerHTML = '';
+        mockData.forEach(d => {
+            const barWrap = document.createElement('div');
+            barWrap.style.cssText = "display:flex; flex-direction:column; align-items:center; flex:1; height:100%; justify-content:flex-end;";
+            
+            barWrap.innerHTML = `
+                <span style="font-size:0.7rem; color:var(--primary-cyan); font-weight:700; margin-bottom:4px;">${d.rate}%</span>
+                <div style="width:100%; height:${d.rate}%; background:var(--accent-glow); border-radius:6px 6px 0 0; transition:height 0.5s;"></div>
+                <span style="font-size:0.72rem; color:var(--text-secondary); margin-top:6px;">${d.day}</span>
+            `;
+            graphContainer.appendChild(barWrap);
+        });
+    },
+
+    // Desk Manual Action Modal
+    openDeskModal: function(studentId) {
+        AppState.selectedStudentId = studentId;
+        const student = AppState.students.find(s => s.id === studentId);
+        if (!student) return;
+
+        const modal = document.getElementById('deskModal');
+        const title = document.getElementById('deskModalTitle');
+        const info = document.getElementById('deskModalInfo');
+
+        if (modal && title && info) {
+            title.innerText = `${student.seatNo} - ${student.name}`;
+            info.innerHTML = `
+                <strong>Roll No:</strong> ${student.rollNo}<br>
+                <strong>Status:</strong> ${student.status}<br>
+                <strong>45-Min Session Timer:</strong> ${student.sessionActive ? TimerEngine.formatTime(student.sessionTimer) : "Inactive"}<br>
+                <strong>GPS Distance to Room 304:</strong> ${LocationEngine.checkGeofence(student.location.lat, student.location.lng).distanceMeters}m
+            `;
+            modal.style.display = 'flex';
+        }
+
+        this.renderStudentPortal();
+    },
+
+    closeDeskModal: function() {
+        const modal = document.getElementById('deskModal');
+        if (modal) modal.style.display = 'none';
+    },
+
+    addActivityLog: function(msg) {
+        const time = new Date().toLocaleTimeString();
+        AppState.activityLogs.unshift(`[${time}] ${msg}`);
+        if (AppState.activityLogs.length > 25) AppState.activityLogs.pop();
         this.renderActivityLogs();
     },
 
-    // Render activity logs box
     renderActivityLogs: function() {
         const container = document.getElementById('activityLogsContainer');
         if (!container) return;
@@ -223,88 +329,99 @@ const App = {
         });
     },
 
-    // Notification toast popups
-    showNotification: function(message, type = "info") {
+    showNotification: function(msg, type = "info") {
         const container = document.getElementById('toast-container');
         if (!container) return;
 
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        toast.innerText = message;
+        toast.innerText = msg;
 
         container.appendChild(toast);
-
-        setTimeout(() => {
-            toast.remove();
-        }, 4000);
+        setTimeout(() => toast.remove(), 4000);
     },
 
-    // Select student to trigger quick actions
-    selectStudent: function(id) {
-        AppState.selectedStudentId = id;
-        const s = AppState.students.find(student => student.id === id);
-        if (s) {
-            this.showNotification(`Selected ${s.name} (${s.seatNo}). 45-min Session Timer: ${TimerEngine.formatTime(s.sessionTimer)}`, "info");
-        }
-    },
-
-    // Export Attendance & Location Data as CSV
     exportCSVReport: function() {
-        let csvContent = "data:text/csv;charset=utf-8,ID,Name,RollNo,Seat,Status,InGeofence,TimerRemainingSec,LastGPSPing\n";
+        let csv = "data:text/csv;charset=utf-8,ID,Name,RollNo,SeatNo,Status,SessionTimerSec,DistanceMeters,InGeofence,LastPingTimestamp\n";
 
         AppState.students.forEach(s => {
-            csvContent += `${s.id},${s.name},${s.rollNo},${s.seatNo},${s.status},${s.location.inZone},${s.sessionTimer},"${s.location.lastPing}"\n`;
+            const dist = LocationEngine.checkGeofence(s.location.lat, s.location.lng).distanceMeters;
+            csv += `${s.id},"${s.name}",${s.rollNo},${s.seatNo},${s.status},${s.sessionTimer},${dist},${s.location.inZone},"${s.location.lastPing}"\n`;
         });
 
-        const encodedUri = encodeURI(csvContent);
+        const uri = encodeURI(csv);
         const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
+        link.setAttribute("href", uri);
         link.setAttribute("download", `Classroom_Attendance_Report_${new Date().toISOString().slice(0,10)}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
 
-        this.showNotification("Attendance & Location CSV report downloaded successfully!", "success");
+        this.showNotification("📥 CSV Attendance & GPS Report Downloaded!", "success");
     },
 
-    setupEventListeners: function() {
-        // Floating QR toggle modal
+    bindEvents: function() {
+        // Floating QR toggle
         const toggleBtn = document.getElementById('qrToggleBtn');
-        const modal = document.getElementById('qrWidgetModal');
+        const qrModal = document.getElementById('qrWidgetModal');
+        if (toggleBtn && qrModal) {
+            toggleBtn.onclick = () => qrModal.classList.toggle('active');
+        }
 
-        if (toggleBtn && modal) {
-            toggleBtn.onclick = () => {
-                modal.classList.toggle('active');
+        // Quick Refresh QR button
+        const refreshQrBtn = document.getElementById('refreshQrBtn');
+        if (refreshQrBtn) {
+            refreshQrBtn.onclick = () => {
+                QREngine.refreshQRCode();
+                App.showNotification("QR Token refreshed manually!", "info");
             };
         }
 
-        // Simulate Scan Form submit
-        const scanForm = document.getElementById('simulateScanForm');
-        if (scanForm) {
-            scanForm.onsubmit = (e) => {
-                e.preventDefault();
-                const studentId = document.getElementById('scanStudentSelect').value;
-                QREngine.simulateScan(studentId);
+        // Teacher / Student Role Toggle
+        const roleToggleBtn = document.getElementById('roleToggleBtn');
+        if (roleToggleBtn) {
+            roleToggleBtn.onclick = () => {
+                if (AppState.currentRole === "teacher") {
+                    AppState.currentRole = "student";
+                    document.getElementById('teacherDashboard').style.display = 'none';
+                    document.getElementById('studentPortalSection').style.display = 'block';
+                    roleToggleBtn.innerText = "Switch to Teacher Mode";
+                } else {
+                    AppState.currentRole = "teacher";
+                    document.getElementById('teacherDashboard').style.display = 'grid';
+                    document.getElementById('studentPortalSection').style.display = 'none';
+                    roleToggleBtn.innerText = "Switch to Student View";
+                }
+                this.showNotification(`Switched to ${AppState.currentRole.toUpperCase()} View`, "info");
             };
         }
 
-        // Simulate Geofence Breach Form submit
-        const breachForm = document.getElementById('simulateBreachForm');
-        if (breachForm) {
-            breachForm.onsubmit = (e) => {
-                e.preventDefault();
-                const studentId = document.getElementById('breachStudentSelect').value;
-                LocationEngine.simulateGeofenceBreach(studentId);
+        // Student Portal Selector
+        const portalSelect = document.getElementById('studentPortalSelect');
+        if (portalSelect) {
+            portalSelect.onchange = (e) => {
+                AppState.selectedStudentId = e.target.value;
+                this.renderStudentPortal();
             };
         }
 
-        // Filter button listeners
+        // Search Input
+        const searchInput = document.getElementById('studentSearchInput');
+        if (searchInput) {
+            searchInput.oninput = (e) => {
+                AppState.searchQuery = e.target.value;
+                this.renderStudentTable();
+            };
+        }
+
+        // Filter Buttons
         const filterBtns = document.querySelectorAll('.filter-btn');
         filterBtns.forEach(btn => {
             btn.onclick = (e) => {
-                filterBtns.forEach(b => b.classList.remove('btn-primary'));
-                filterBtns.forEach(b => b.classList.add('btn-glass'));
-
+                filterBtns.forEach(b => {
+                    b.classList.remove('btn-primary');
+                    b.classList.add('btn-glass');
+                });
                 e.target.classList.remove('btn-glass');
                 e.target.classList.add('btn-primary');
 
@@ -312,10 +429,26 @@ const App = {
                 this.renderStudentTable();
             };
         });
+
+        // Sim Forms
+        const scanForm = document.getElementById('simulateScanForm');
+        if (scanForm) {
+            scanForm.onsubmit = (e) => {
+                e.preventDefault();
+                const id = document.getElementById('scanStudentSelect').value;
+                QREngine.processScan(id);
+            };
+        }
+
+        const breachForm = document.getElementById('simulateBreachForm');
+        if (breachForm) {
+            breachForm.onsubmit = (e) => {
+                e.preventDefault();
+                const id = document.getElementById('breachStudentSelect').value;
+                LocationEngine.triggerBreach(id);
+            };
+        }
     }
 };
 
-// Initialize on DOM Ready
-document.addEventListener('DOMContentLoaded', () => {
-    App.init();
-});
+document.addEventListener('DOMContentLoaded', () => App.init());

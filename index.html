@@ -34,17 +34,21 @@
         </div>
 
         <div class="header-actions">
+            <button class="btn-glass" id="roleToggleBtn">
+                <i class='bx bx-user-circle'></i> Switch to Student View
+            </button>
+
             <div class="badge-pill">
                 <div class="pulse-dot"></div>
-                Room 304 • Live Session
+                Room 304 • Session Active
             </div>
 
             <div class="badge-pill" style="border-color: rgba(245, 158, 11, 0.3); color: var(--warning-amber); background: rgba(245, 158, 11, 0.08);">
-                <i class='bx bx-timer'></i> Session Remaining: <span id="globalClassTimer" style="margin-left: 4px; font-weight: 800;">45:00</span>
+                <i class='bx bx-timer'></i> Class Timer: <span id="globalClassTimer" style="margin-left: 4px; font-weight: 800;">45:00</span>
             </div>
 
-            <button class="btn-glass" onclick="App.exportCSVReport()">
-                <i class='bx bx-download'></i> Export Attendance CSV
+            <button class="btn-primary" onclick="App.exportCSVReport()">
+                <i class='bx bx-download'></i> Export CSV Report
             </button>
         </div>
     </nav>
@@ -55,9 +59,9 @@
         <!-- Top Metrics Stats Banner -->
         <section class="stats-banner">
             <div class="stat-card">
-                <div class="stat-icon cyan"><i class='bx bx-user-check'></i></div>
+                <div class="stat-icon cyan"><i class='bx bx-group'></i></div>
                 <div class="stat-info">
-                    <h4>Total Students</h4>
+                    <h4>Total Registered</h4>
                     <div class="stat-value" id="totalStudentsCount">10</div>
                 </div>
             </div>
@@ -71,7 +75,7 @@
             </div>
 
             <div class="stat-card">
-                <div class="stat-icon amber"><i class='bx bx-map-pin'></i></div>
+                <div class="stat-icon amber"><i class='bx bx-error-circle'></i></div>
                 <div class="stat-info">
                     <h4>Geofence Breaches</h4>
                     <div class="stat-value" id="breachAlertCount">0</div>
@@ -87,19 +91,19 @@
             </div>
         </section>
 
-        <!-- Main Dashboard Grid Layout -->
-        <div class="dashboard-grid">
+        <!-- TEACHER CONTROL DASHBOARD VIEW -->
+        <div class="dashboard-grid" id="teacherDashboard">
 
             <!-- LEFT COLUMN: Interactive Seating Grid & Student Roster -->
             <div class="left-column" style="display: flex; flex-direction: column; gap: 24px;">
                 
-                <!-- Interactive Classroom Seating Grid -->
+                <!-- Interactive Classroom Seating Grid (10 Desks) -->
                 <div class="glass-panel">
                     <div class="panel-header">
                         <div class="panel-title">
-                            <i class='bx bx-grid-alt'></i> Room 304 Seating Chart (10 Desks)
+                            <i class='bx bx-grid-alt'></i> Interactive Room 304 Seating Chart (10 Desks)
                         </div>
-                        <small style="color: var(--text-muted);">Click desk to view 45-min live session & GPS status</small>
+                        <small style="color: var(--text-muted);">Click any desk for manual override & GPS ping</small>
                     </div>
 
                     <div class="seating-grid-container" id="seatingGridContainer">
@@ -107,18 +111,20 @@
                     </div>
                 </div>
 
-                <!-- Complete Student Roster Table -->
+                <!-- Complete Student Roster Directory -->
                 <div class="glass-panel">
-                    <div class="panel-header">
+                    <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
                         <div class="panel-title">
                             <i class='bx bx-list-ul'></i> Student Session & GPS Directory
                         </div>
 
-                        <div style="display: flex; gap: 8px;">
-                            <button class="btn-primary filter-btn" data-filter="all" style="padding: 6px 14px; font-size: 0.8rem;">All (10)</button>
-                            <button class="btn-glass filter-btn" data-filter="present" style="padding: 6px 14px; font-size: 0.8rem;">Present</button>
-                            <button class="btn-glass filter-btn" data-filter="breach" style="padding: 6px 14px; font-size: 0.8rem;">Out of Zone</button>
-                            <button class="btn-glass filter-btn" data-filter="absent" style="padding: 6px 14px; font-size: 0.8rem;">Absent</button>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="text" id="studentSearchInput" placeholder="Search student name or roll..." class="btn-glass" style="padding: 6px 14px; font-size: 0.82rem; outline: none; border-radius: var(--radius-full); width: 200px;">
+
+                            <button class="btn-primary filter-btn" data-filter="all" style="padding: 6px 12px; font-size: 0.78rem;">All (10)</button>
+                            <button class="btn-glass filter-btn" data-filter="present" style="padding: 6px 12px; font-size: 0.78rem;">Present</button>
+                            <button class="btn-glass filter-btn" data-filter="breach" style="padding: 6px 12px; font-size: 0.78rem;">Out of Zone</button>
+                            <button class="btn-glass filter-btn" data-filter="absent" style="padding: 6px 12px; font-size: 0.78rem;">Absent</button>
                         </div>
                     </div>
 
@@ -129,7 +135,7 @@
                                 <th>Desk</th>
                                 <th>Status</th>
                                 <th>45-Min Timer</th>
-                                <th>Last GPS Ping</th>
+                                <th>GPS Ping</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -141,7 +147,7 @@
 
             </div>
 
-            <!-- RIGHT COLUMN: Radar Geofence Map, QR Simulation Controls, Logs -->
+            <!-- RIGHT COLUMN: Radar Geofence Map, Simulation Controls, Weekly Trends -->
             <div class="right-column" style="display: flex; flex-direction: column; gap: 24px;">
 
                 <!-- Live Classroom Geofence Radar Map -->
@@ -161,22 +167,22 @@
                     </div>
 
                     <div style="font-size: 0.8rem; color: var(--text-secondary); text-align: center;">
-                        <i class='bx bx-info-circle' style="color: var(--primary-cyan);"></i> Checks if student remains inside Room 304 during the 45-min class window.
+                        <i class='bx bx-info-circle' style="color: var(--primary-cyan);"></i> Verifies student GPS location is within 30m of Room 304 center.
                     </div>
                 </div>
 
-                <!-- Simulation & Testing Controls -->
+                <!-- Simulation & Trial Controls -->
                 <div class="glass-panel">
                     <div class="panel-header">
                         <div class="panel-title">
-                            <i class='bx bx-slider-alt'></i> QR & Geofence Simulator
+                            <i class='bx bx-slider-alt'></i> QR & Geofence Trial Simulator
                         </div>
                     </div>
 
                     <!-- Simulate QR Scan -->
                     <form id="simulateScanForm" style="margin-bottom: 20px;">
                         <label style="font-size: 0.82rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">
-                            Simulate Student Scanning Corner QR Code:
+                            Simulate Student Scanning Side-Corner QR Code:
                         </label>
                         <div style="display: flex; gap: 10px;">
                             <select id="scanStudentSelect" class="btn-glass" style="flex: 1; border-radius: var(--radius-sm); outline: none; font-size: 0.85rem;">
@@ -204,11 +210,24 @@
                     </form>
                 </div>
 
+                <!-- 7-Day Attendance Trend Chart -->
+                <div class="glass-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <i class='bx bx-bar-chart-alt-2'></i> 7-Day Attendance Trend
+                        </div>
+                    </div>
+
+                    <div id="weeklyTrendGraph" style="height: 140px; display: flex; gap: 12px; align-items: flex-end; padding-top: 10px;">
+                        <!-- Filled dynamically by app.js -->
+                    </div>
+                </div>
+
                 <!-- Real-time Activity Logs -->
                 <div class="glass-panel">
                     <div class="panel-header">
                         <div class="panel-title">
-                            <i class='bx bx-history'></i> Real-Time Attendance Logs
+                            <i class='bx bx-history'></i> Real-Time Activity Audit Logs
                         </div>
                     </div>
 
@@ -221,32 +240,104 @@
 
         </div>
 
+        <!-- STUDENT SELF-PORTAL APP VIEW (Hidden by Default) -->
+        <div id="studentPortalSection" style="display: none; max-width: 600px; margin: 0 auto;">
+            <div class="glass-panel" style="text-align: center; padding: 36px 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <label style="font-size: 0.85rem; color: var(--text-secondary);">Select Student Identity:</label>
+                    <select id="studentPortalSelect" class="btn-glass" style="border-radius: var(--radius-full); font-size: 0.85rem; padding: 6px 14px;">
+                        <!-- Filled by JS -->
+                    </select>
+                </div>
+
+                <img id="portalStudentAvatar" src="" alt="Student Avatar" style="width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--primary-cyan); margin-bottom: 12px; object-fit: cover;">
+
+                <h2 id="portalStudentName" style="font-size: 1.6rem; font-weight: 800;">Aarav Sharma</h2>
+                <p id="portalStudentRoll" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px;">CS2026-01 • Desk 1A</p>
+
+                <div id="portalStatusBadge" class="seat-badge absent" style="font-size: 0.9rem; padding: 6px 18px; margin-bottom: 24px; display: inline-block;">NOT CHECKED IN</div>
+
+                <!-- Live Timer Card -->
+                <div style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin-bottom: 24px;">
+                    <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Active Class Session Timer</div>
+                    <div id="studentPortalTimer" style="font-size: 3rem; font-weight: 800; color: var(--primary-cyan); line-height: 1.2;">45:00</div>
+                    <small style="color: var(--text-secondary);">Session automatically expires after 45 minutes</small>
+                </div>
+
+                <!-- Distance to Classroom -->
+                <div style="display: flex; justify-content: space-around; background: rgba(255,255,255,0.02); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 24px;">
+                    <div>
+                        <small style="color: var(--text-muted); display: block;">Distance to Room 304</small>
+                        <strong id="portalDistanceText" style="font-size: 1.2rem; color: var(--success-green);">12 Meters</strong>
+                    </div>
+                    <div>
+                        <small style="color: var(--text-muted); display: block;">Geofence Radius</small>
+                        <strong style="font-size: 1.2rem; color: var(--primary-cyan);">30 Meters</strong>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button class="btn-primary" style="flex: 1; justify-content: center;" onclick="QREngine.processScan(AppState.selectedStudentId)">
+                        <i class='bx bx-qr-scan'></i> Check In via QR
+                    </button>
+                    <button class="btn-glass" style="flex: 1; justify-content: center;" onclick="LocationEngine.pingRealGPS(AppState.selectedStudentId)">
+                        <i class='bx bx-map-pin'></i> Ping Live GPS
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- ========== FLOATING SIDE-CORNER QR CODE WIDGET ========== -->
     <div class="floating-qr-widget">
         <!-- Floating Toggle Button -->
         <button class="qr-toggle-btn" id="qrToggleBtn" title="Open Dynamic Attendance QR Code">
-            <i class='bx bx-qr'></i>
+            <i class='bx bx-qr-scan'></i>
         </button>
 
         <!-- Side Corner QR Modal -->
         <div class="qr-widget-modal" id="qrWidgetModal">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                 <strong style="font-size: 0.95rem;">Corner Attendance QR</strong>
-                <span class="badge-pill" style="font-size: 0.7rem; padding: 2px 8px;">Auto-Refresh 30s</span>
+                <button class="btn-glass" id="refreshQrBtn" style="padding: 2px 8px; font-size: 0.7rem;">Refresh</button>
             </div>
             
-            <p style="font-size: 0.78rem; color: var(--text-secondary);">
-                Scan this QR using student app upon entering Room 304 to register your 45-min class session.
+            <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px;">
+                Scan this dynamic QR token upon entering Room 304 to register your 45-min class session.
             </p>
 
-            <div class="qr-container" id="qrCodeContainer">
-                <!-- QR Code Image Rendered by qrcode.js -->
+            <div class="qr-container" style="background: #0B0F19; border-radius: var(--radius-md); padding: 12px; display: flex; justify-content: center; align-items: center;">
+                <!-- High-contrast Standalone Canvas QR Renderer (100% Reliable, Zero Network Dependency) -->
+                <canvas id="qrCanvasElem" width="180" height="180" style="border-radius: 8px;"></canvas>
             </div>
 
-            <div style="text-align: center;">
-                <span id="qrTokenHash" style="font-family: monospace; font-size: 0.75rem; color: var(--primary-cyan);">Token: GENERATING...</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                <span id="qrTokenHash" style="font-family: monospace; font-size: 0.72rem; color: var(--primary-cyan);">Token: GENERATING...</span>
+                <span style="font-size: 0.72rem; color: var(--text-muted);">Auto-refresh: <strong id="qrCountdownText" style="color: var(--warning-amber);">30s</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- DESK MANUAL CONTROL MODAL -->
+    <div id="deskModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 3000; display: none; align-items: center; justify-content: center;">
+        <div class="glass-panel" style="width: 380px; text-align: center; border-color: var(--border-glow);">
+            <h3 id="deskModalTitle" style="font-size: 1.3rem; font-weight: 800; margin-bottom: 12px;">Desk Control</h3>
+            <p id="deskModalInfo" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6; text-align: left; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px;"></p>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn-primary" onclick="QREngine.processScan(AppState.selectedStudentId); App.closeDeskModal();">
+                    <i class='bx bx-check-circle'></i> Mark Present & Start 45-Min Session
+                </button>
+                <button class="btn-glass" style="border-color: rgba(245, 158, 11, 0.4); color: var(--warning-amber);" onclick="LocationEngine.triggerBreach(AppState.selectedStudentId); App.closeDeskModal();">
+                    <i class='bx bx-walk'></i> Simulate Geofence Breach
+                </button>
+                <button class="btn-glass" onclick="LocationEngine.pingRealGPS(AppState.selectedStudentId); App.closeDeskModal();">
+                    <i class='bx bx-map-pin'></i> Ping Device Live GPS
+                </button>
+                <button class="btn-glass" style="border-color: rgba(244, 63, 94, 0.4); color: var(--danger-rose);" onclick="App.closeDeskModal();">
+                    Close
+                </button>
             </div>
         </div>
     </div>
