@@ -95,4 +95,4 @@ The dashboard comes with built-in simulation tools to test real-time scenarios:
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
-*Crafted with ❤️ for Smart Education Systems.*
+*Crafted with ❤️ for Smart Education Systems.* ~yrsubm
